@@ -1,71 +1,137 @@
 "use client";
 import { useState } from "react";
+import GroupCard from "@/components/GroupCard";
+import Sidebar from "@/components/Sidebar";
 
 
 export default function Home() {
 
-    function addUser() {
       
-      setUsers([
-        ...users,
-        {
-          name: newUserName,
-          balance: newUserBalance
-        }
-      ]);
-
-      setNewUserName("");
-      setNewUserBalance(0);
-
-    }
-
-    const [users, setUsers] = useState([
-      { name: "Pat", balance: 500 },
-      { name: "Alex", balance: -250 }
+    const [groups, setGroups] = useState([
+      { name: "Thailand 2027" },
+      { name: "Apartment Expenses" },
+      { name: "Weekend Gala"}
     ])
 
-    const [newUserName, setNewUserName] = useState("");
+    const [newGroupName, setNewGroupName] = useState("");
 
-    const [newUserBalance, setNewUserBalance] = useState(0);
+    const [selectedGroup, setSelectedGroup] = useState(groups[0]);
+
+    function addGroup() {
+      if (newGroupName.trim() === "") return;
+
+      const newGroup = {
+        name: newGroupName,
+      };
+
+      setGroups([...groups, newGroup]);
+      setSelectedGroup(newGroup);
+      setNewGroupName("");
+    }
+
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-4">
-      <h1 className="text-5xl font-bold">
-        Hating Kapatid 💸
-      </h1>
+    <main className="flex flex-1 justify-center p-8">
 
-      <p className="text-gray-500">
-        Ambangan Made Easy.
-      </p>
+      <div className="flex w-full max-w-7xl gap-8">
 
-      {users.map((user) => (
-        <p key={user.name}>
-          {user.name} - ₱{user.balance}
-        </p>
-      ))}
+        {/*Left Panel */}
 
-      <input
-          type="text"
-          placeholder="Enter name"
-          value={newUserName}
-          onChange={(e) => setNewUserName(e.target.value)}
-          className="border rounded px-3 py-2"
-      />
+        <div className="w-80 h-[75vh] flex flex-col">
 
-      <input
-          type="number"
-          placeholder="Enter balance"
-          value={newUserBalance}
-          onChange={(e) => setNewUserBalance(Number(e.target.value))}
-          className="border rounded px-3 py-2"
-      />
+          <Sidebar
+              groups={groups}
+              selectedGroup={selectedGroup}
+              setSelectedGroup={setSelectedGroup}
+          />
 
-      <button
-          onClick = {addUser}
-          className = "bg-blue-500 text-white px-4 py-2 rounded"
-      >
-        Add User
-      </button>
+
+          <div
+              className="
+                  mt-auto
+                  pt-6
+                  space-y-4
+              "
+          >
+
+            <input
+                type="text"
+                placeholder="New Expense Group"
+                value={newGroupName}
+                onChange={(e) => setNewGroupName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter"){
+                    addGroup();
+                  }
+                }}
+                className="
+                w-full
+                bg-white
+                border
+                border-hk-accent
+                rounded-lg
+                px-4
+                py-2
+                focus:outline-none
+                focus:ring-2
+                focus:ring-hk-secondary
+                "
+            />
+
+              <button
+                onClick={addGroup}
+                className="
+                    w-full
+                    bg-hk-secondary
+                    hover:bg-hk-primary
+                    text-white
+                    rounded-lg
+                    py-2
+                    transition-colors
+                "
+              >
+                  Create Group
+              </button>
+          </div>
+
+
+        </div>
+
+
+
+        {/*Right Panel */}
+
+        <div
+            className="
+                flex-1
+                bg-white
+                rounded-xl
+                shadow-sm
+                p-8
+                h-[75vh]
+                overflow-y-auto
+            "
+        >
+
+          <div
+              className="
+                  bg-white
+                  rounded-xl
+                  shadow-sm
+                  p-8
+                  h-full
+                  overflow-y-auto
+              "
+          >
+            <h2 className="text-3xl font-bold">
+              {selectedGroup.name}
+            </h2>
+          </div>
+
+        </div>
+
+
+      </div>
 
     </main>
   );
