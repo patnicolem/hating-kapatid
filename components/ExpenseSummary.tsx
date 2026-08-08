@@ -64,21 +64,21 @@ export default function ExpenseSummary({
     return (
     <div>
 
-        <h3 className="text-xl font-bold text-hk-primary mb-4">
+        <h3 className="text-xl font-bold text-hk-primary mb-1">
         Expense Summary
         </h3>
 
         {/* Total Expenses */}
 
-        <div className="bg-hk-light rounded-lg p-4 mb-6">
+        <div className="bg-hk-light rounded-lg px-4 py-3 mb-4">
 
-        <p className="text-sm text-hk-text-light">
-            Total Group Expenses
-        </p>
+          <p className="text-sm text-hk-text-light">
+              Total Group Expenses
+          </p>
 
-        <p className="text-2xl font-bold text-hk-primary">
-            ₱{totalExpenses.toFixed(2)}
-        </p>
+          <p className="text-2xl font-bold text-hk-primary">
+              ₱{totalExpenses.toFixed(2)}
+          </p>
 
         </div>
 

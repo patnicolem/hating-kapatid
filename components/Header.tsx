@@ -1,92 +1,116 @@
+"use client";
+
+import Link from "next/link";
+
 import {
-  HandCoins,
   House,
   Users,
-  ChartColumn,
   Settings,
   CircleUserRound,
+  HandCoins,
 } from "lucide-react";
 
-
 export default function Header() {
-    
 
-    const navItems = [
+  const navItems = [
     {
-        name: "Home",
-        icon: House,
+      name: "Home",
+      href: "/",
+      icon: House,
     },
     {
-        name: "Groups",
-        icon: Users,
+      name: "Groups",
+      href: "/groups",
+      icon: Users,
     },
     {
-        name: "Activity",
-        icon: ChartColumn,
+      name: "Settings",
+      href: "/settings",
+      icon: Settings,
     },
-    {
-        name: "Settings",
-        icon: Settings,
-    },
-    ];
+  ];
 
-    return (
+  return (
+    <header>
+      <nav className="w-full bg-hk-primary px-8 py-4">
 
-<header className="w-full bg-hk-background shadow border-b border-[#b2e0d4]">
+        <div className="flex items-center w-full">
 
-<div className="max-w-6xl mx-auto px-8 py-5 flex justify-between items-center">
+          {/* App Title + Catchphrase */}
+          <div className="flex items-center gap-2">
 
-<div>
+            <HandCoins
+              size={24}
+              className="text-white"
+            />
 
-<h1 className="flex items-center gap-2 text-3xl font-bold text-hk-primary">
-  <HandCoins size={30} />
-  Hating Kapatid
-</h1>
+            <Link
+              href="/"
+              className="flex items-baseline gap-3"
+            >
+              <span className="text-xl font-bold text-white">
+                Hating Kapatid
+              </span>
 
-<p className="text-hk-secondary mt-1">
-ambagan made easy.
-</p>
+              <span className="text-sm text-hk-accent">
+                ambagan made easy
+              </span>
+            </Link>
 
-</div>
-
-<div className="flex items-center gap-2 font-medium text-hk-primary">
-  <CircleUserRound size={22} />
-  Guest
-</div>
-
-</div>
-
-<nav className="max-w-6xl mx-auto px-8 py-3 flex gap-10">
-
-  {navItems.map((item) => {
-
-    const Icon = item.icon;
-
-    return (
-      <button
-        key={item.name}
-        className="
-          flex
-          items-center
-          gap-2
-          font-medium
-          text-hk-primary
-          hover:text-hk-secondary
-          transition-colors
-        "
-      >
-        <Icon size={18} />
-        {item.name}
-      </button>
-    );
-
-  })}
-
-</nav>
+          </div>
 
 
-</header>
+          {/* Navigation + Guest */}
+          <div className="ml-auto flex items-center gap-6">
 
-    );
+            {navItems.map((item) => {
 
+              const Icon = item.icon;
+
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className="
+                    flex
+                    items-center
+                    gap-2
+                    font-medium
+                    text-white
+                    hover:text-hk-accent
+                    transition-colors
+                  "
+                >
+                  <Icon size={18} />
+                  {item.name}
+                </Link>
+              );
+
+            })}
+
+
+            {/* Guest */}
+            <div
+              className="
+                flex
+                items-center
+                gap-2
+                text-white
+                font-medium
+                border-l
+                border-white/30
+                pl-6
+              "
+            >
+              <CircleUserRound size={18} />
+              Guest
+            </div>
+
+          </div>
+
+        </div>
+
+      </nav>
+    </header>
+  );
 }

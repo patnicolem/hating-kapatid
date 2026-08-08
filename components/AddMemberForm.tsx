@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { UserRoundPlus } from "lucide-react";
 import { Member } from "@/types/group";
 
 type AddMemberFormProps = {
@@ -22,8 +23,8 @@ export default function AddMemberForm({
 
     const newMember: Member = {
       id: Date.now(),
-      name: name,
-      email: email,
+      name: name.trim(),
+      email: email.trim(),
     };
 
     onAddMember(newMember);
@@ -33,60 +34,78 @@ export default function AddMemberForm({
   }
 
   return (
-    <div className="space-y-2 max-w-md">
+    <div className="max-w-2xl">
 
-      <input
-        type="text"
-        placeholder="Member Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        className="
-          w-full
-          bg-white
-          border
-          border-hk-accent
-          rounded-lg
-          px-4
-          py-2
-          focus:outline-none
-          focus:ring-2
-          focus:ring-hk-secondary
-        "
-      />
+      {/* Inputs */}
+      <div className="flex items-center gap-3">
 
-      <input
-        type="email"
-        placeholder="Email Address"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="
-          w-full
-          bg-white
-          border
-          border-hk-accent
-          rounded-lg
-          px-4
-          py-2
-          focus:outline-none
-          focus:ring-2
-          focus:ring-hk-secondary
-        "
-      />
+        {/* Member Name */}
+        <input
+          type="text"
+          placeholder="Member Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="
+            flex-1
+            bg-white
+            border
+            border-hk-accent
+            rounded-lg
+            px-3
+            py-2
+            focus:outline-none
+            focus:ring-2
+            focus:ring-hk-secondary
+          "
+        />
 
-      <button
-        onClick={handleSubmit}
-        className="
-          w-full
-          bg-hk-secondary
-          hover:bg-hk-primary
-          text-white
-          rounded-lg
-          py-2
-          transition-colors
-        "
-      >
-        Add Member
-      </button>
+        {/* Email */}
+        <input
+          type="email"
+          placeholder="Email Address"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="
+            flex-1
+            bg-white
+            border
+            border-hk-accent
+            rounded-lg
+            px-3
+            py-2
+            focus:outline-none
+            focus:ring-2
+            focus:ring-hk-secondary
+          "
+        />
+
+      </div>
+
+      {/* Add Member Button */}
+      <div className="flex justify-center mt-3">
+
+        <button
+          type="button"
+          onClick={handleSubmit}
+          className="
+            flex
+            items-center
+            justify-center
+            gap-2
+            bg-hk-secondary
+            hover:bg-hk-primary
+            text-white
+            rounded-lg
+            px-6
+            py-2
+            transition-colors
+          "
+        >
+          <UserRoundPlus size={18} />
+          Add Member
+        </button>
+
+      </div>
 
     </div>
   );

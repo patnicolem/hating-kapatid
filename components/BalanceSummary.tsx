@@ -131,17 +131,16 @@ export default function BalanceSummary({
 
   }
 
-
   return (
     <div>
 
-      <h3 className="text-xl font-bold text-hk-primary mb-4">
+      <h3 className="text-xl font-bold text-hk-primary mb-2">
         Who Owes Who
       </h3>
 
       {debts.length === 0 ? (
 
-        <div className="bg-hk-light rounded-lg p-4">
+        <div className="border border-hk-accent rounded-lg px-4 py-3">
           <p className="text-hk-text-light">
             Everyone is settled up.
           </p>
@@ -149,32 +148,34 @@ export default function BalanceSummary({
 
       ) : (
 
-        <div className="space-y-3">
+        <div className="border border-hk-accent rounded-lg overflow-hidden">
 
           {debts.map((debt, index) => (
 
             <div
               key={index}
-              className="
-                bg-hk-light
-                rounded-lg
-                p-4
+              className={`
                 flex
                 items-center
                 justify-between
-              "
+                px-4
+                py-3
+                ${index !== debts.length - 1
+                  ? "border-b border-hk-accent"
+                  : ""}
+              `}
             >
 
               <p>
-                <span className="font-semibold">
+                <span className="font-semibold text-hk-primary">
                   {debt.from.name}
                 </span>
 
-                <span className="mx-2">
+                <span className="mx-2 text-hk-text-light">
                   owes
                 </span>
 
-                <span className="font-semibold">
+                <span className="font-semibold text-hk-primary">
                   {debt.to.name}
                 </span>
               </p>
@@ -193,4 +194,6 @@ export default function BalanceSummary({
 
     </div>
   );
+
+
 }
