@@ -11,20 +11,33 @@ export default function ExpenseList({
   expenses,
   members,
 }: ExpenseListProps) {
-
   if (expenses.length === 0) {
     return (
-      <p className="text-sm text-hk-text-light">
-        No expenses yet.
-      </p>
+      <div
+        className="
+          rounded-xl
+          border
+          border-hk-border
+          bg-hk-surface
+          px-5
+          py-8
+          text-center
+        "
+      >
+        <p className="font-medium text-hk-text">
+          No expenses yet
+        </p>
+
+        <p className="mt-1 text-sm text-hk-text-light">
+          Add an expense above to start tracking your group spending.
+        </p>
+      </div>
     );
   }
 
   return (
-    <div className="border border-hk-accent rounded-lg overflow-hidden bg-white">
-
-      {expenses.map((expense, index) => {
-
+    <div className="space-y-3">
+      {expenses.map((expense) => {
         const payer = members.find(
           (member) => member.id === expense.paidBy
         );
@@ -32,72 +45,97 @@ export default function ExpenseList({
         return (
           <div
             key={expense.id}
-            className={`
-              px-4
-              py-3
-              ${index !== expenses.length - 1
-                ? "border-b border-hk-accent"
-                : ""}
-            `}
+            className="
+              rounded-xl
+              border
+              border-hk-border
+              bg-hk-surface
+              p-4
+              transition-colors
+              hover:border-hk-accent
+            "
           >
-
             {/* Expense information */}
-            <div className="flex justify-between items-center">
-
+            <div
+              className="
+                flex
+                flex-col
+                gap-2
+                sm:flex-row
+                sm:items-center
+                sm:justify-between
+              "
+            >
               <div>
-
-                <p className="font-medium text-hk-primary">
+                <p className="font-semibold text-hk-text">
                   {expense.description}
                 </p>
 
-                <p className="text-sm text-hk-text-light">
-                  Paid by {payer?.name}
+                <p className="mt-1 text-sm text-hk-text-light">
+                  Paid by{" "}
+                  <span className="font-medium text-hk-text-secondary">
+                    {payer?.name ?? "Unknown"}
+                  </span>
                 </p>
-
               </div>
 
-              <p className="font-bold text-hk-primary">
+              <p className="text-lg font-bold text-hk-primary">
                 ₱{expense.amount.toFixed(2)}
               </p>
-
             </div>
-
 
             {/* Individual shares */}
-            <div className="mt-1 text-sm text-hk-text-light">
+            <div
+              className="
+                mt-4
+                border-t
+                border-hk-border
+                pt-3
+              "
+            >
+              <p className="mb-2 text-sm font-medium text-hk-text">
+                Split
+              </p>
 
-              {expense.splits.map((split, index) => {
+              <div className="flex flex-wrap gap-x-4 gap-y-2">
+                {expense.splits.map((split) => {
+                  const member = members.find(
+                    (member) =>
+                      member.id === split.memberId
+                  );
 
-                const member = members.find(
-                  (member) => member.id === split.memberId
-                );
+                  if (!member) return null;
 
-                if (!member) return null;
+                  const share =
+                    expense.splitType === "percent"
+                      ? expense.amount *
+                        (split.value / 100)
+                      : split.value;
 
-                const share =
-                  expense.splitType === "percent"
-                    ? expense.amount * (split.value / 100)
-                    : split.value;
-
-                return (
-                  <span key={split.memberId}>
-
-                    {index > 0 && " | "}
-
-                    {member.name}: ₱{share.toFixed(2)}
-
-                  </span>
-                );
-
-              })}
-
+                  return (
+                    <span
+                      key={split.memberId}
+                      className="
+                        rounded-md
+                        bg-hk-background
+                        px-2.5
+                        py-1
+                        text-sm
+                        text-hk-text-secondary
+                      "
+                    >
+                      {member.name}:{" "}
+                      <span className="font-medium text-hk-text">
+                        ₱{share.toFixed(2)}
+                      </span>
+                    </span>
+                  );
+                })}
+              </div>
             </div>
-
           </div>
         );
-
       })}
-
     </div>
   );
 }

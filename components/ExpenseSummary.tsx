@@ -12,17 +12,17 @@ export default function ExpenseSummary({
   members,
   expenses,
 }: ExpenseSummaryProps) {
-
   const totalExpenses = expenses.reduce(
     (total, expense) => total + expense.amount,
     0
   );
 
   const memberSummaries = members.map((member) => {
-
     // How much this member actually paid
     const totalPaid = expenses
-      .filter((expense) => expense.paidBy === member.id)
+      .filter(
+        (expense) => expense.paidBy === member.id
+      )
       .reduce(
         (total, expense) => total + expense.amount,
         0
@@ -31,7 +31,6 @@ export default function ExpenseSummary({
     // How much this member is responsible for
     const totalOwed = expenses.reduce(
       (total, expense) => {
-
         const split = expense.splits.find(
           (split) => split.memberId === member.id
         );
@@ -41,8 +40,9 @@ export default function ExpenseSummary({
         }
 
         if (expense.splitType === "percent") {
-          return total + (
-            expense.amount * split.value / 100
+          return (
+            total +
+            expense.amount * (split.value / 100)
           );
         }
 
@@ -61,105 +61,141 @@ export default function ExpenseSummary({
     };
   });
 
-    return (
-    <div>
+  return (
+    <div className="space-y-5">
 
-        <h3 className="text-xl font-bold text-hk-primary mb-1">
-        Expense Summary
+      {/* Section title */}
+      <div>
+        <h3 className="text-xl font-bold text-hk-primary">
+          Expense Summary
         </h3>
 
-        {/* Total Expenses */}
+        <p className="mt-1 text-sm text-hk-text-light">
+          See how much everyone has paid and owes.
+        </p>
+      </div>
 
-        <div className="bg-hk-light rounded-lg px-4 py-3 mb-4">
+      {/* Total Expenses */}
+      <div
+        className="
+          rounded-xl
+          border
+          border-hk-border
+          bg-hk-surface
+          px-5
+          py-4
+        "
+      >
+        <p className="text-sm text-hk-text-light">
+          Total Group Expenses
+        </p>
 
-          <p className="text-sm text-hk-text-light">
-              Total Group Expenses
-          </p>
+        <p className="mt-1 text-3xl font-bold text-hk-primary">
+          ₱{totalExpenses.toFixed(2)}
+        </p>
+      </div>
 
-          <p className="text-2xl font-bold text-hk-primary">
-              ₱{totalExpenses.toFixed(2)}
-          </p>
+      {/* Individual Summary */}
+      {memberSummaries.length > 0 && (
+        <div
+          className="
+            overflow-hidden
+            rounded-xl
+            border
+            border-hk-border
+            bg-hk-surface
+          "
+        >
+          {memberSummaries.map(
+            (summary, index) => (
+              <div
+                key={summary.member.id}
+                className={`
+                  grid
+                  grid-cols-1
+                  gap-3
+                  px-5
+                  py-4
+                  sm:grid-cols-4
+                  sm:items-center
+                  sm:gap-4
+                  ${
+                    index !==
+                    memberSummaries.length - 1
+                      ? "border-b border-hk-border"
+                      : ""
+                  }
+                `}
+              >
+                {/* Member */}
+                <div>
+                  <p className="font-semibold text-hk-text">
+                    {summary.member.name}
+                  </p>
+                </div>
 
+                {/* Paid */}
+                <div>
+                  <p className="text-xs text-hk-text-light">
+                    Paid
+                  </p>
+
+                  <p className="mt-0.5 font-medium text-hk-text">
+                    ₱{summary.totalPaid.toFixed(2)}
+                  </p>
+                </div>
+
+                {/* Share */}
+                <div>
+                  <p className="text-xs text-hk-text-light">
+                    Share
+                  </p>
+
+                  <p className="mt-0.5 font-medium text-hk-text">
+                    ₱{summary.totalOwed.toFixed(2)}
+                  </p>
+                </div>
+
+                {/* Net Balance */}
+                <div className="sm:text-right">
+                  <p className="text-xs text-hk-text-light">
+                    Balance
+                  </p>
+
+                  <p
+                    className={`
+                      mt-0.5
+                      font-bold
+                      ${
+                        summary.netBalance >= 0
+                          ? "text-hk-success"
+                          : "text-hk-danger"
+                      }
+                    `}
+                  >
+                    {summary.netBalance >= 0
+                      ? "+"
+                      : "-"}
+                    ₱
+                    {Math.abs(
+                      summary.netBalance
+                    ).toFixed(2)}
+                  </p>
+                </div>
+              </div>
+            )
+          )}
         </div>
+      )}
 
-
-        {/* Individual Summary */}
-
-        <div className="border border-hk-accent rounded-lg overflow-hidden">
-
-        {memberSummaries.map((summary) => (
-
-            <div
-            key={summary.member.id}
-            className="
-                grid
-                grid-cols-4
-                items-center
-                gap-4
-                px-4
-                py-3
-                border-b
-                border-hk-accent
-                last:border-b-0
-                bg-white
-            "
-            >
-
-            {/* Member */}
-            <div className="font-semibold text-hk-primary">
-                {summary.member.name}
-            </div>
-
-            {/* Paid */}
-            <div>
-                <span className="text-sm text-hk-text-light">
-                Paid:
-                </span>{" "}
-                <span className="font-medium">
-                ₱{summary.totalPaid.toFixed(2)}
-                </span>
-            </div>
-
-            {/* Share */}
-            <div>
-                <span className="text-sm text-hk-text-light">
-                Share:
-                </span>{" "}
-                <span className="font-medium">
-                ₱{summary.totalOwed.toFixed(2)}
-                </span>
-            </div>
-
-            {/* Net Balance */}
-            <div
-                className={`text-right font-bold ${
-                summary.netBalance >= 0
-                    ? "text-green-700"
-                    : "text-red-600"
-                }`}
-            >
-                {summary.netBalance >= 0 ? "+" : "-"}
-                ₱{Math.abs(summary.netBalance).toFixed(2)}
-            </div>
-
-            </div>
-
-        ))}
-
-        </div>
-
-
-        {/* Who Owes Who */}
-
-        <div className="mt-8">
-
+      {/* Who Owes Who */}
+      <div>
         <BalanceSummary
-            expenses={expenses}
-            members={members}
+          expenses={expenses}
+          members={members}
         />
-
-        </div>
+      </div>
 
     </div>
-    );
+  );
 }

@@ -2,18 +2,34 @@ export default function Footer() {
   return (
     <footer
       className="
-        fixed
-        bottom-0
-        left-0
-        w-full
         border-t
-        border-hk-secondary
-        bg-hk-primary
-        z-50
+        border-hk-border
+        bg-hk-surface
+        text-hk-text-secondary
       "
     >
-      <div className="max-w-3xl mx-auto px-6 py-1 text-center text-sm text-white">
-        © 2026 Hating Kapatid • Built with Next.js & React
+      <div
+        className="
+          mx-auto
+          flex
+          min-h-12
+          w-full
+          max-w-7xl
+          items-center
+          justify-center
+          px-4
+          text-center
+          text-xs
+          sm:px-6
+          sm:text-sm
+          lg:px-8
+        "
+      >
+        <span>
+          © 2026 Hating Kapatid
+          <span className="mx-2 text-hk-text-muted">·</span>
+          Built with Next.js & React
+        </span>
       </div>
     </footer>
   );

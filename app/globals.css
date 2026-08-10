@@ -1,28 +1,259 @@
 @import "tailwindcss";
 
-:root {
-  --hk-primary: #004d00;
-  --hk-secondary: #007a33;
-  --hk-accent: #66b3a1;
-  --hk-surface: #b2e0d4;
-  --hk-background: #e0f7f1;
+/*
+|--------------------------------------------------------------------------
+| Hating Kapatid Theme
+|--------------------------------------------------------------------------
+*/
 
-  --hk-text: #1f2937;
-  --hk-text-light: #6b7280;
+:root {
+  /* Backgrounds */
+  --hk-bg: #f7f8f7;
+  --hk-surface: #ffffff;
+  --hk-surface-secondary: #f1f3f2;
+
+  /* Text */
+  --hk-text: #171b19;
+  --hk-text-secondary: #59635e;
+  --hk-text-muted: #87918c;
+
+  /* Borders */
+  --hk-border: #dfe5e2;
+
+  /* Primary green */
+  --hk-primary: #0f9d7a;
+  --hk-primary-hover: #0b8568;
+
+  /* Secondary / neutral action */
+  --hk-secondary: #64748b;
+  --hk-secondary-hover: #52657a;
+
+  /* Status */
+  --hk-success: #16805f;
+  --hk-danger: #c94b4b;
 }
 
+
+/*
+|--------------------------------------------------------------------------
+| Dark Mode
+|--------------------------------------------------------------------------
+|
+| Soft charcoal rather than pure black.
+| Green remains the accent instead of dominating the interface.
+|
+*/
+
+.dark {
+  /* Backgrounds */
+  --hk-bg: #151a18;
+  --hk-surface: #1d2421;
+  --hk-surface-secondary: #252d29;
+
+  /* Text */
+  --hk-text: #f1f4f2;
+  --hk-text-secondary: #b5c0ba;
+  --hk-text-muted: #8d9993;
+
+  /* Borders */
+  --hk-border: #35403b;
+
+  /* Accent */
+  --hk-primary: #18b890;
+  --hk-primary-hover: #12a47f;
+
+  /* Secondary action */
+  --hk-secondary: #687b93;
+  --hk-secondary-hover: #596b82;
+
+  /* Status */
+  --hk-success: #42c99b;
+  --hk-danger: #ef7777;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Tailwind v4 Theme
+|--------------------------------------------------------------------------
+|
+| This makes the CSS variables available as Tailwind utilities:
+|
+| bg-hk-bg
+| bg-hk-surface
+| text-hk-text
+| text-hk-primary
+| border-hk-border
+| etc.
+|
+*/
+
 @theme inline {
-  --color-hk-primary: var(--hk-primary);
-  --color-hk-secondary: var(--hk-secondary);
-  --color-hk-accent: var(--hk-accent);
+  --color-hk-bg: var(--hk-bg);
   --color-hk-surface: var(--hk-surface);
-  --color-hk-background: var(--hk-background);
+  --color-hk-surface-secondary: var(--hk-surface-secondary);
 
   --color-hk-text: var(--hk-text);
-  --color-hk-text-light: var(--hk-text-light);
+  --color-hk-text-secondary: var(--hk-text-secondary);
+  --color-hk-text-muted: var(--hk-text-muted);
+
+  --color-hk-border: var(--hk-border);
+
+  --color-hk-primary: var(--hk-primary);
+  --color-hk-primary-hover: var(--hk-primary-hover);
+
+  --color-hk-secondary: var(--hk-secondary);
+  --color-hk-secondary-hover: var(--hk-secondary-hover);
+
+  --color-hk-success: var(--hk-success);
+  --color-hk-danger: var(--hk-danger);
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | Backwards-compatible names
+  |--------------------------------------------------------------------------
+  |
+  | Keep these temporarily because some existing components use:
+  |
+  | border-hk-accent
+  | text-hk-text-light
+  |
+  */
+
+  --color-hk-accent: var(--hk-border);
+  --color-hk-text-light: var(--hk-text-secondary);
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Dark mode variant
+|--------------------------------------------------------------------------
+|
+| Allows Tailwind classes such as:
+|
+| dark:bg-hk-surface
+| dark:text-hk-text
+|
+*/
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+
+/*
+|--------------------------------------------------------------------------
+| Base page
+|--------------------------------------------------------------------------
+*/
+
+html,
+body {
+  min-height: 100%;
+}
+
+html {
+  background-color: var(--hk-bg);
 }
 
 body {
-  background: var(--hk-background);
+  background-color: var(--hk-bg);
+  color: var(--hk-text);
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Shared form styling
+|--------------------------------------------------------------------------
+*/
+
+input,
+select,
+textarea {
+  background-color: var(--hk-surface);
+  color: var(--hk-text);
+  border-color: var(--hk-border);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--hk-text-muted);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--hk-primary);
+
+  box-shadow:
+    0 0 0 2px color-mix(
+      in srgb,
+      var(--hk-primary) 18%,
+      transparent
+    );
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Native select / option styling
+|--------------------------------------------------------------------------
+*/
+
+select {
+  color: var(--hk-text);
+}
+
+option {
+  background-color: var(--hk-surface);
+  color: var(--hk-text);
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Dark mode native controls
+|--------------------------------------------------------------------------
+*/
+
+.dark {
+  color-scheme: dark;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Buttons
+|--------------------------------------------------------------------------
+*/
+
+button {
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Selection
+|--------------------------------------------------------------------------
+*/
+
+::selection {
+  background-color: color-mix(
+    in srgb,
+    var(--hk-primary) 25%,
+    transparent
+  );
+
   color: var(--hk-text);
 }

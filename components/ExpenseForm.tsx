@@ -13,7 +13,6 @@ export default function ExpenseForm({
   members,
   onAddExpense,
 }: ExpenseFormProps) {
-
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [paidBy, setPaidBy] = useState("");
@@ -27,9 +26,7 @@ export default function ExpenseForm({
   const [splitValues, setSplitValues] =
     useState<Record<number, number>>({});
 
-
   function handleSubmit() {
-
     if (
       description.trim() === "" ||
       amount === "" ||
@@ -50,70 +47,81 @@ export default function ExpenseForm({
       value: number;
     }[] = [];
 
-
     // EVEN SPLIT
     if (splitType === "even") {
-
       const amountPerMember =
-        expenseAmount / selectedMemberIds.length;
+        expenseAmount /
+        selectedMemberIds.length;
 
-      splits = selectedMemberIds.map((memberId) => ({
-        memberId,
-        value: amountPerMember,
-      }));
-
+      splits = selectedMemberIds.map(
+        (memberId) => ({
+          memberId,
+          value: amountPerMember,
+        })
+      );
     }
-
 
     // AMOUNT SPLIT
     if (splitType === "amount") {
-
       const totalSplitAmount =
         selectedMemberIds.reduce(
           (total, memberId) =>
-            total + (splitValues[memberId] ?? 0),
+            total +
+            (splitValues[memberId] ?? 0),
           0
         );
 
       if (
-        Math.abs(totalSplitAmount - expenseAmount) > 0.01
+        Math.abs(
+          totalSplitAmount - expenseAmount
+        ) > 0.01
       ) {
         alert(
-          `Split amounts must equal ₱${expenseAmount.toFixed(2)}`
+          `Split amounts must equal ₱${expenseAmount.toFixed(
+            2
+          )}`
         );
         return;
       }
 
-      splits = selectedMemberIds.map((memberId) => ({
-        memberId,
-        value: splitValues[memberId] ?? 0,
-      }));
-
+      splits = selectedMemberIds.map(
+        (memberId) => ({
+          memberId,
+          value:
+            splitValues[memberId] ?? 0,
+        })
+      );
     }
-
 
     // PERCENTAGE SPLIT
     if (splitType === "percent") {
-
       const totalPercentage =
         selectedMemberIds.reduce(
           (total, memberId) =>
-            total + (splitValues[memberId] ?? 0),
+            total +
+            (splitValues[memberId] ?? 0),
           0
         );
 
-      if (Math.abs(totalPercentage - 100) > 0.01) {
-        alert("Percentages must add up to 100%.");
+      if (
+        Math.abs(
+          totalPercentage - 100
+        ) > 0.01
+      ) {
+        alert(
+          "Percentages must add up to 100%."
+        );
         return;
       }
 
-      splits = selectedMemberIds.map((memberId) => ({
-        memberId,
-        value: splitValues[memberId] ?? 0,
-      }));
-
+      splits = selectedMemberIds.map(
+        (memberId) => ({
+          memberId,
+          value:
+            splitValues[memberId] ?? 0,
+        })
+      );
     }
-
 
     const newExpense: Expense = {
       id: Date.now(),
@@ -126,9 +134,7 @@ export default function ExpenseForm({
 
     onAddExpense(newExpense);
 
-
     // Reset form
-
     setDescription("");
     setAmount("");
     setPaidBy("");
@@ -137,16 +143,27 @@ export default function ExpenseForm({
     setSplitValues({});
   }
 
+  const inputClass = `
+    w-full
+    rounded-lg
+    border
+    border-hk-border
+    bg-hk-surface
+    px-3
+    py-2.5
+    text-hk-text
+    placeholder:text-hk-text-muted
+    transition-colors
+    focus:border-hk-primary
+    focus:outline-none
+    focus:ring-2
+    focus:ring-hk-primary/20
+  `;
 
   return (
-
-    <div className="space-y-3 max-w-2xl">
-
-
+    <div className="space-y-4">
       {/* Description + Amount */}
-
-      <div className="flex items-center gap-2">
-
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_160px]">
         <input
           type="text"
           placeholder="Expense Description"
@@ -154,18 +171,7 @@ export default function ExpenseForm({
           onChange={(e) =>
             setDescription(e.target.value)
           }
-          className="
-            flex-1
-            bg-white
-            border
-            border-hk-accent
-            rounded-lg
-            px-3
-            py-2
-            focus:outline-none
-            focus:ring-2
-            focus:ring-hk-secondary
-          "
+          className={inputClass}
         />
 
         <input
@@ -175,63 +181,32 @@ export default function ExpenseForm({
           onChange={(e) =>
             setAmount(e.target.value)
           }
-          className="
-            w-32
-            bg-white
-            border
-            border-hk-accent
-            rounded-lg
-            px-3
-            py-2
-            focus:outline-none
-            focus:ring-2
-            focus:ring-hk-secondary
-          "
+          className={inputClass}
         />
-
       </div>
 
-
       {/* Who Paid + Split Type */}
-
-      <div className="flex items-center gap-2">
-
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <select
           value={paidBy}
           onChange={(e) =>
             setPaidBy(e.target.value)
           }
-          className="
-            flex-1
-            bg-white
-            border
-            border-hk-accent
-            rounded-lg
-            px-3
-            py-2
-            focus:outline-none
-            focus:ring-2
-            focus:ring-hk-secondary
-          "
+          className={inputClass}
         >
-
           <option value="">
             Who paid?
           </option>
 
           {members.map((member) => (
-
             <option
               key={member.id}
               value={member.id}
             >
               {member.name}
             </option>
-
           ))}
-
         </select>
-
 
         <select
           value={splitType}
@@ -243,20 +218,8 @@ export default function ExpenseForm({
                 | "percent"
             )
           }
-          className="
-            flex-1
-            bg-white
-            border
-            border-hk-accent
-            rounded-lg
-            px-3
-            py-2
-            focus:outline-none
-            focus:ring-2
-            focus:ring-hk-secondary
-          "
+          className={inputClass}
         >
-
           <option value="even">
             Split Evenly
           </option>
@@ -268,103 +231,93 @@ export default function ExpenseForm({
           <option value="percent">
             Split by Percentage
           </option>
-
         </select>
-
       </div>
 
-
       {/* Members participating in split */}
-
       <div
         className="
+          rounded-xl
           border
-          border-hk-accent
-          rounded-lg
-          p-3
+          border-hk-border
+          bg-hk-surface-secondary
+          p-4
         "
       >
-
-        <p className="font-medium mb-2">
+        <p className="mb-3 font-semibold text-hk-text">
           Split Between
         </p>
 
-        <div className="space-y-1">
-
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {members.map((member) => (
-
             <label
               key={member.id}
               className="
                 flex
+                cursor-pointer
                 items-center
                 gap-3
-                py-1
-                cursor-pointer
+                rounded-lg
+                px-3
+                py-2
+                text-hk-text-secondary
+                transition-colors
+                hover:bg-hk-surface
+                hover:text-hk-text
               "
             >
-
               <input
                 type="checkbox"
                 checked={selectedMemberIds.includes(
                   member.id
                 )}
                 onChange={(e) => {
-
                   if (e.target.checked) {
-
                     setSelectedMemberIds([
                       ...selectedMemberIds,
                       member.id,
                     ]);
-
                   } else {
-
                     setSelectedMemberIds(
                       selectedMemberIds.filter(
-                        (id) => id !== member.id
+                        (id) =>
+                          id !== member.id
                       )
                     );
-
                   }
-
                 }}
+                className="
+                  h-4
+                  w-4
+                  cursor-pointer
+                  accent-hk-primary
+                "
               />
 
-              <span>
-                {member.name}
-              </span>
-
+              <span>{member.name}</span>
             </label>
-
           ))}
-
         </div>
-
       </div>
 
-
       {/* Amount / Percentage values */}
-
       {splitType !== "even" && (
-
         <div
           className="
+            rounded-xl
             border
-            border-hk-accent
-            rounded-lg
-            p-3
+            border-hk-border
+            bg-hk-surface-secondary
+            p-4
           "
         >
-
-          <p className="font-medium mb-2">
+          <p className="mb-3 font-semibold text-hk-text">
             {splitType === "amount"
               ? "Amount per member"
               : "Percentage per member"}
           </p>
 
-          <div className="space-y-2">
-
+          <div className="space-y-3">
             {members
               .filter((member) =>
                 selectedMemberIds.includes(
@@ -372,17 +325,21 @@ export default function ExpenseForm({
                 )
               )
               .map((member) => (
-
                 <div
                   key={member.id}
                   className="
                     flex
                     items-center
-                    gap-3
+                    gap-16
                   "
                 >
-
-                  <span className="w-24">
+                  <span
+                    className="
+                      w-24
+                      shrink-0
+                      text-hk-text-secondary
+                    "
+                  >
                     {member.name}
                   </span>
 
@@ -390,29 +347,19 @@ export default function ExpenseForm({
                     type="number"
                     min="0"
                     value={
-                      splitValues[member.id] ?? ""
+                      splitValues[member.id] ??
+                      ""
                     }
                     onChange={(e) => {
-
                       setSplitValues({
                         ...splitValues,
                         [member.id]:
-                          Number(e.target.value),
+                          Number(
+                            e.target.value
+                          ),
                       });
-
                     }}
-                    className="
-                      flex-1
-                      bg-white
-                      border
-                      border-hk-accent
-                      rounded-lg
-                      px-3
-                      py-2
-                      focus:outline-none
-                      focus:ring-2
-                      focus:ring-hk-secondary
-                    "
+                    className={`${inputClass} w-64!`}
                     placeholder={
                       splitType === "amount"
                         ? "Amount"
@@ -421,23 +368,18 @@ export default function ExpenseForm({
                   />
 
                   {splitType === "percent" && (
-                    <span>%</span>
+                    <span className="text-hk-text-muted">
+                      %
+                    </span>
                   )}
-
                 </div>
-
               ))}
-
           </div>
-
         </div>
-
       )}
 
-
       {/* Add Expense */}
-
-      <div className="flex justify-center mt-3">
+      <div className="flex justify-center pt-1">
         <button
           type="button"
           onClick={handleSubmit}
@@ -446,21 +388,25 @@ export default function ExpenseForm({
             items-center
             justify-center
             gap-2
-            bg-hk-secondary
-            hover:bg-hk-primary
-            text-white
             rounded-lg
+            bg-hk-primary
             px-6
-            py-2
+            py-2.5
+            font-medium
+            text-white
             transition-colors
+            hover:bg-hk-primary-hover
+            focus:outline-none
+            focus:ring-2
+            focus:ring-hk-primary
+            focus:ring-offset-2
+            focus:ring-offset-hk-bg
           "
         >
           <CirclePlus size={18} />
           Add Expense
         </button>
       </div>
-
     </div>
-
   );
 }

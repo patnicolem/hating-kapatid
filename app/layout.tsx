@@ -21,19 +21,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${roboto.className} min-h-screen flex flex-col`}>
+      <body className="min-h-screen bg-hk-background text-hk-text">
+        <div className="flex min-h-screen flex-col">
 
-        {/* Header */}
-        <Header />
+          <Header />
 
-        {/* Main Content */}
-        <main className="flex-1 min-h-0 pb-10">
-          {children}
-        </main>
+          <main className="flex-1">
+            {children}
+          </main>
 
-        {/* Footer */}
-        <Footer />
+          <Footer />
 
+        </div>
       </body>
     </html>
   );
