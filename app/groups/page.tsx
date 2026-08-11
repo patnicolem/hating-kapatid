@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { X, UsersRound } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import ExpenseForm from "@/components/ExpenseForm";
 import MemberList from "@/components/MemberList";
@@ -91,39 +91,14 @@ export default function GroupsPage() {
       "
     >
 
-{/* =========================
-    MOBILE SIDEBAR BUTTON
-========================= */}
 
-<div className="mb-4 md:hidden">
-  <button
-    type="button"
-    onClick={() => setIsSidebarOpen(true)}
-    className="
-      flex
-      items-center
-      gap-2
-      rounded-lg
-      bg-hk-primary
-      px-4
-      py-2
-      font-medium
-      text-white
-      transition-colors
-      hover:bg-hk-secondary
-    "
-  >
-    <Menu size={20} />
-    Expense Groups
-  </button>
-</div>
 
 
 {/* =========================
     DESKTOP SIDEBAR
 ========================= */}
 
-<div className="hidden w-72 flex-shrink-0 flex-col md:flex">
+<div className="hidden w-72 shrink-0 flex-col md:flex">
 
   <Sidebar
     groups={groups}
@@ -205,7 +180,7 @@ export default function GroupsPage() {
               left-0
               top-0
               h-full
-              w-80
+              w-72
               max-w-[85vw]
               overflow-y-auto
               border-r
@@ -217,26 +192,31 @@ export default function GroupsPage() {
           >
 
             {/* Drawer Header */}
-            <div className="mb-6 flex items-center justify-between">
-
-              <h2 className="text-xl font-bold text-hk-primary">
-                Expense Groups
-              </h2>
+            <div className="mb-4 flex items-center">
 
               <button
                 type="button"
                 onClick={() => setIsSidebarOpen(false)}
                 className="
-                  rounded-lg
-                  p-2
+                  flex
+                  h-10
+                  w-10
+                  items-center
+                  justify-center
+                  rounded-full
+                  border
+                  border-hk-border
+                  bg-hk-surface
                   text-hk-text-secondary
+                  shadow-sm
                   transition-colors
+                  hover:border-hk-primary
                   hover:bg-hk-surface-secondary
                   hover:text-hk-primary
                 "
                 aria-label="Close expense groups"
               >
-                <X size={22} />
+                <X size={20} />
               </button>
 
             </div>
@@ -320,6 +300,7 @@ export default function GroupsPage() {
 
         <div
           className="
+            relative
             w-full
             rounded-xl
             bg-hk-background
@@ -331,15 +312,47 @@ export default function GroupsPage() {
           "
         >
 
+          {/* Mobile Group Switcher */}
+          <button
+            type="button"
+            onClick={() => setIsSidebarOpen(true)}
+            className="
+              absolute
+              right-4
+              top-4
+              flex
+              h-10
+              w-10
+              items-center
+              justify-center
+              rounded-lg
+              border
+              border-hk-border
+              bg-hk-surface
+              text-hk-primary
+              shadow-sm
+              transition-colors
+              hover:border-hk-primary
+              hover:bg-hk-surface-secondary
+              sm:right-6
+              sm:top-6
+              md:hidden
+            "
+            aria-label="Switch expense group"
+            title="Expense Groups"
+          >
+            <UsersRound size={20} />
+          </button>
+
           {/* =========================
               GROUP TITLE
           ========================= */}
 
-          <h2 className="text-3xl font-bold text-hk-primary">
+          <h2 className="pr-12 text-2xl font-bold text-hk-primary sm:text-3xl">
             {selectedGroup.name}
           </h2>
 
-          <p className="mt-1 text-hk-text-light">
+          <p className="mt-1 text-sm text-hk-text-light sm:text-base">
             Manage members, expenses, and balances.
           </p>
 

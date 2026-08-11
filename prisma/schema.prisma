@@ -1,0 +1,139 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String  @id @default(cuid())
+  email        String  @unique
+  username     String
+  passwordHash String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  groupMemberships GroupMember[]
+  sentInvitations  GroupInvitation[] @relation("InvitationSender")
+  expensesPaid     Expense[]         @relation("ExpensePayer")
+  expenseSplits    ExpenseSplit[]
+
+  @@map("users")
+}
+
+model Group {
+  id   String @id @default(cuid())
+  name String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members     GroupMember[]
+  expenses    Expense[]
+  invitations GroupInvitation[]
+
+  @@map("groups")
+}
+
+model GroupMember {
+  id      String @id @default(cuid())
+  userId  String
+  groupId String
+
+  role     GroupRole @default(MEMBER)
+  joinedAt DateTime  @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+  @@index([groupId])
+  @@index([userId])
+  @@map("group_members")
+}
+
+model GroupInvitation {
+  id        String @id @default(cuid())
+  groupId   String
+  email     String
+  invitedBy String
+
+  status    InvitationStatus @default(PENDING)
+  expiresAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  inviter User @relation("InvitationSender", fields: [invitedBy], references: [id], onDelete: Cascade)
+
+  @@index([groupId])
+  @@index([email])
+  @@map("group_invitations")
+}
+
+model Expense {
+  id      String @id @default(cuid())
+  groupId String
+  paidBy  String
+
+  description String
+  amount      Decimal   @db.Decimal(12, 2)
+  splitType   SplitType
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  payer User @relation("ExpensePayer", fields: [paidBy], references: [id], onDelete: Restrict)
+
+  splits ExpenseSplit[]
+
+  @@index([groupId])
+  @@index([paidBy])
+  @@map("expenses")
+}
+
+model ExpenseSplit {
+  id        String @id @default(cuid())
+  expenseId String
+  userId    String
+
+  value Decimal @db.Decimal(12, 2)
+
+  expense Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([expenseId, userId])
+  @@index([userId])
+  @@map("expense_splits")
+}
+
+enum GroupRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+enum SplitType {
+  EQUAL
+  AMOUNT
+  PERCENT
+}
