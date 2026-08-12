@@ -5,11 +5,13 @@ import { Expense, Member } from "@/types/group";
 type ExpenseListProps = {
   expenses: Expense[];
   members: Member[];
+  currency: string;
 };
 
 export default function ExpenseList({
   expenses,
   members,
+  currency,
 }: ExpenseListProps) {
   if (expenses.length === 0) {
     return (
@@ -80,7 +82,7 @@ export default function ExpenseList({
               </div>
 
               <p className="text-lg font-bold text-hk-primary">
-                ₱{expense.amount.toFixed(2)}
+                {currency} {expense.amount.toFixed(2)}
               </p>
             </div>
 
@@ -100,16 +102,14 @@ export default function ExpenseList({
               <div className="flex flex-wrap gap-x-4 gap-y-2">
                 {expense.splits.map((split) => {
                   const member = members.find(
-                    (member) =>
-                      member.id === split.memberId
+                    (member) => member.id === split.memberId
                   );
 
                   if (!member) return null;
 
                   const share =
-                    expense.splitType === "percent"
-                      ? expense.amount *
-                        (split.value / 100)
+                    expense.splitType === "PERCENT"
+                      ? expense.amount * (split.value / 100)
                       : split.value;
 
                   return (
@@ -126,7 +126,7 @@ export default function ExpenseList({
                     >
                       {member.name}:{" "}
                       <span className="font-medium text-hk-text">
-                        ₱{share.toFixed(2)}
+                        {currency} {share.toFixed(2)}
                       </span>
                     </span>
                   );

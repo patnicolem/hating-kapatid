@@ -5,10 +5,11 @@ import { Expense, Member } from "@/types/group";
 type BalanceSummaryProps = {
   expenses: Expense[];
   members: Member[];
+  currency: string;
 };
 
 type Balance = {
-  memberId: number;
+  memberId: string;
   amount: number;
 };
 
@@ -21,6 +22,7 @@ type Debt = {
 export default function BalanceSummary({
   expenses,
   members,
+  currency,
 }: BalanceSummaryProps) {
   // Calculate each member's net balance
   const balances: Balance[] = members.map((member) => {
@@ -41,7 +43,7 @@ export default function BalanceSummary({
         let owedAmount = split.value;
 
         // For percentage splits
-        if (expense.splitType === "percent") {
+        if (expense.splitType === "PERCENT") {
           owedAmount =
             expense.amount * (split.value / 100);
         }
@@ -119,6 +121,15 @@ export default function BalanceSummary({
     }
   }
 
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  };
+
   return (
     <div>
       <h3 className="mb-3 text-xl font-bold text-hk-primary">
@@ -184,7 +195,7 @@ export default function BalanceSummary({
               </p>
 
               <p className="font-bold text-hk-primary">
-                ₱{debt.amount.toFixed(2)}
+                {formatCurrency(debt.amount)}
               </p>
             </div>
           ))}

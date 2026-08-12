@@ -6,11 +6,13 @@ import BalanceSummary from "@/components/BalanceSummary";
 type ExpenseSummaryProps = {
   members: Member[];
   expenses: Expense[];
+  currency: string;
 };
 
 export default function ExpenseSummary({
   members,
   expenses,
+  currency,
 }: ExpenseSummaryProps) {
   const totalExpenses = expenses.reduce(
     (total, expense) => total + expense.amount,
@@ -20,9 +22,7 @@ export default function ExpenseSummary({
   const memberSummaries = members.map((member) => {
     // How much this member actually paid
     const totalPaid = expenses
-      .filter(
-        (expense) => expense.paidBy === member.id
-      )
+      .filter((expense) => expense.paidBy === member.id)
       .reduce(
         (total, expense) => total + expense.amount,
         0
@@ -39,7 +39,7 @@ export default function ExpenseSummary({
           return total;
         }
 
-        if (expense.splitType === "percent") {
+        if (expense.splitType === "PERCENT") {
           return (
             total +
             expense.amount * (split.value / 100)
@@ -61,9 +61,17 @@ export default function ExpenseSummary({
     };
   });
 
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  };
+
   return (
     <div className="space-y-5">
-
       {/* Section title */}
       <div>
         <h3 className="text-xl font-bold text-hk-primary">
@@ -91,7 +99,7 @@ export default function ExpenseSummary({
         </p>
 
         <p className="mt-1 text-3xl font-bold text-hk-primary">
-          ₱{totalExpenses.toFixed(2)}
+          {formatCurrency(totalExpenses)}
         </p>
       </div>
 
@@ -106,85 +114,77 @@ export default function ExpenseSummary({
             bg-hk-surface
           "
         >
-          {memberSummaries.map(
-            (summary, index) => (
-              <div
-                key={summary.member.id}
-                className={`
-                  grid
-                  grid-cols-1
-                  gap-3
-                  px-5
-                  py-4
-                  sm:grid-cols-4
-                  sm:items-center
-                  sm:gap-4
-                  ${
-                    index !==
-                    memberSummaries.length - 1
-                      ? "border-b border-hk-border"
-                      : ""
-                  }
-                `}
-              >
-                {/* Member */}
-                <div>
-                  <p className="font-semibold text-hk-text">
-                    {summary.member.name}
-                  </p>
-                </div>
-
-                {/* Paid */}
-                <div>
-                  <p className="text-xs text-hk-text-light">
-                    Paid
-                  </p>
-
-                  <p className="mt-0.5 font-medium text-hk-text">
-                    ₱{summary.totalPaid.toFixed(2)}
-                  </p>
-                </div>
-
-                {/* Share */}
-                <div>
-                  <p className="text-xs text-hk-text-light">
-                    Share
-                  </p>
-
-                  <p className="mt-0.5 font-medium text-hk-text">
-                    ₱{summary.totalOwed.toFixed(2)}
-                  </p>
-                </div>
-
-                {/* Net Balance */}
-                <div className="sm:text-right">
-                  <p className="text-xs text-hk-text-light">
-                    Balance
-                  </p>
-
-                  <p
-                    className={`
-                      mt-0.5
-                      font-bold
-                      ${
-                        summary.netBalance >= 0
-                          ? "text-hk-success"
-                          : "text-hk-danger"
-                      }
-                    `}
-                  >
-                    {summary.netBalance >= 0
-                      ? "+"
-                      : "-"}
-                    ₱
-                    {Math.abs(
-                      summary.netBalance
-                    ).toFixed(2)}
-                  </p>
-                </div>
+          {memberSummaries.map((summary, index) => (
+            <div
+              key={summary.member.id}
+              className={`
+                grid
+                grid-cols-1
+                gap-3
+                px-5
+                py-4
+                sm:grid-cols-4
+                sm:items-center
+                sm:gap-4
+                ${
+                  index !== memberSummaries.length - 1
+                    ? "border-b border-hk-border"
+                    : ""
+                }
+              `}
+            >
+              {/* Member */}
+              <div>
+                <p className="font-semibold text-hk-text">
+                  {summary.member.name}
+                </p>
               </div>
-            )
-          )}
+
+              {/* Paid */}
+              <div>
+                <p className="text-xs text-hk-text-light">
+                  Paid
+                </p>
+
+                <p className="mt-0.5 font-medium text-hk-text">
+                  {formatCurrency(summary.totalOwed)}
+                </p>
+              </div>
+
+              {/* Share */}
+              <div>
+                <p className="text-xs text-hk-text-light">
+                  Share
+                </p>
+
+                <p className="mt-0.5 font-medium text-hk-text">
+                  ₱{summary.totalOwed.toFixed(2)}
+                </p>
+              </div>
+
+              {/* Net Balance */}
+              <div className="sm:text-right">
+                <p className="text-xs text-hk-text-light">
+                  Balance
+                </p>
+
+                <p
+                  className={`
+                    mt-0.5
+                    font-bold
+                    ${
+                      summary.netBalance >= 0
+                        ? "text-hk-success"
+                        : "text-hk-danger"
+                    }
+                  `}
+                >
+                  {summary.netBalance >= 0 ? "+" : "-"}
+                  {formatCurrency(Math.abs(summary.netBalance))}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
@@ -193,9 +193,9 @@ export default function ExpenseSummary({
         <BalanceSummary
           expenses={expenses}
           members={members}
+          currency={currency}
         />
       </div>
-
     </div>
   );
 }

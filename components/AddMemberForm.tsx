@@ -5,7 +5,7 @@ import { UserRoundPlus } from "lucide-react";
 import { Member } from "@/types/group";
 
 type AddMemberFormProps = {
-  onAddMember: (member: Member) => void;
+  onAddMember: (member: Omit<Member, "id">) => void;
 };
 
 export default function AddMemberForm({
@@ -19,8 +19,7 @@ export default function AddMemberForm({
       return;
     }
 
-    const newMember: Member = {
-      id: Date.now(),
+    const newMember: Omit<Member, "id"> = {
       name: name.trim(),
       email: email.trim(),
     };
@@ -50,9 +49,7 @@ export default function AddMemberForm({
 
   return (
     <div className="space-y-3">
-      {/* Inputs */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {/* Member Name */}
         <input
           type="text"
           placeholder="Member Name"
@@ -61,7 +58,6 @@ export default function AddMemberForm({
           className={inputClass}
         />
 
-        {/* Email */}
         <input
           type="email"
           placeholder="Email Address"
@@ -71,7 +67,6 @@ export default function AddMemberForm({
         />
       </div>
 
-      {/* Add Member Button */}
       <div className="flex justify-center">
         <button
           type="button"

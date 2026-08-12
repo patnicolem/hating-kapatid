@@ -7,6 +7,7 @@ import { Member, Expense } from "@/types/group";
 type ExpenseFormProps = {
   members: Member[];
   onAddExpense: (expense: Expense) => void;
+  currency: string;
 };
 
 export default function ExpenseForm({
@@ -18,13 +19,13 @@ export default function ExpenseForm({
   const [paidBy, setPaidBy] = useState("");
 
   const [splitType, setSplitType] =
-    useState<"even" | "amount" | "percent">("even");
+    useState<"EQUAL" | "AMOUNT" | "PERCENT">("EQUAL");
 
   const [selectedMemberIds, setSelectedMemberIds] =
-    useState<number[]>([]);
+    useState<string[]>([]);
 
   const [splitValues, setSplitValues] =
-    useState<Record<number, number>>({});
+    useState<Record<string, number>>({});
 
   function handleSubmit() {
     if (
@@ -42,92 +43,87 @@ export default function ExpenseForm({
 
     const expenseAmount = Number(amount);
 
+    if (expenseAmount <= 0) {
+      alert("Expense amount must be greater than zero.");
+      return;
+    }
+
     let splits: {
-      memberId: number;
+      memberId: string;
       value: number;
     }[] = [];
 
-    // EVEN SPLIT
-    if (splitType === "even") {
-      const amountPerMember =
-        expenseAmount /
-        selectedMemberIds.length;
+    // =========================
+    // EQUAL SPLIT
+    // =========================
 
-      splits = selectedMemberIds.map(
-        (memberId) => ({
-          memberId,
-          value: amountPerMember,
-        })
-      );
+    if (splitType === "EQUAL") {
+      const amountPerMember =
+        expenseAmount / selectedMemberIds.length;
+
+      splits = selectedMemberIds.map((memberId) => ({
+        memberId,
+        value: amountPerMember,
+      }));
     }
 
+    // =========================
     // AMOUNT SPLIT
-    if (splitType === "amount") {
+    // =========================
+
+    if (splitType === "AMOUNT") {
       const totalSplitAmount =
         selectedMemberIds.reduce(
           (total, memberId) =>
-            total +
-            (splitValues[memberId] ?? 0),
+            total + (splitValues[memberId] ?? 0),
           0
         );
 
       if (
-        Math.abs(
-          totalSplitAmount - expenseAmount
-        ) > 0.01
+        Math.abs(totalSplitAmount - expenseAmount) > 0.01
       ) {
         alert(
-          `Split amounts must equal ₱${expenseAmount.toFixed(
-            2
-          )}`
+          `Split amounts must equal ${formatCurrency(expenseAmount)}`
         );
         return;
       }
 
-      splits = selectedMemberIds.map(
-        (memberId) => ({
-          memberId,
-          value:
-            splitValues[memberId] ?? 0,
-        })
-      );
+      splits = selectedMemberIds.map((memberId) => ({
+        memberId,
+        value: splitValues[memberId] ?? 0,
+      }));
     }
 
+    // =========================
     // PERCENTAGE SPLIT
-    if (splitType === "percent") {
+    // =========================
+
+    if (splitType === "PERCENT") {
       const totalPercentage =
         selectedMemberIds.reduce(
           (total, memberId) =>
-            total +
-            (splitValues[memberId] ?? 0),
+            total + (splitValues[memberId] ?? 0),
           0
         );
 
       if (
-        Math.abs(
-          totalPercentage - 100
-        ) > 0.01
+        Math.abs(totalPercentage - 100) > 0.01
       ) {
-        alert(
-          "Percentages must add up to 100%."
-        );
+        alert("Percentages must add up to 100%.");
         return;
       }
 
-      splits = selectedMemberIds.map(
-        (memberId) => ({
-          memberId,
-          value:
-            splitValues[memberId] ?? 0,
-        })
-      );
+      splits = selectedMemberIds.map((memberId) => ({
+        memberId,
+        value: splitValues[memberId] ?? 0,
+      }));
     }
 
     const newExpense: Expense = {
-      id: Date.now(),
-      description,
+      id: crypto.randomUUID(),
+      description: description.trim(),
       amount: expenseAmount,
-      paidBy: Number(paidBy),
+      paidBy,
       splitType,
       splits,
     };
@@ -138,7 +134,7 @@ export default function ExpenseForm({
     setDescription("");
     setAmount("");
     setPaidBy("");
-    setSplitType("even");
+    setSplitType("EQUAL");
     setSelectedMemberIds([]);
     setSplitValues({});
   }
@@ -160,6 +156,15 @@ export default function ExpenseForm({
     focus:ring-hk-primary/20
   `;
 
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  };
+
   return (
     <div className="space-y-4">
       {/* Description + Amount */}
@@ -176,6 +181,8 @@ export default function ExpenseForm({
 
         <input
           type="number"
+          min="0"
+          step="0.01"
           placeholder="Amount"
           value={amount}
           onChange={(e) =>
@@ -213,22 +220,22 @@ export default function ExpenseForm({
           onChange={(e) =>
             setSplitType(
               e.target.value as
-                | "even"
-                | "amount"
-                | "percent"
+                | "EQUAL"
+                | "AMOUNT"
+                | "PERCENT"
             )
           }
           className={inputClass}
         >
-          <option value="even">
+          <option value="EQUAL">
             Split Evenly
           </option>
 
-          <option value="amount">
+          <option value="AMOUNT">
             Split by Amount
           </option>
 
-          <option value="percent">
+          <option value="PERCENT">
             Split by Percentage
           </option>
         </select>
@@ -273,16 +280,18 @@ export default function ExpenseForm({
                 )}
                 onChange={(e) => {
                   if (e.target.checked) {
-                    setSelectedMemberIds([
-                      ...selectedMemberIds,
-                      member.id,
-                    ]);
+                    setSelectedMemberIds(
+                      (current) => [
+                        ...current,
+                        member.id,
+                      ]
+                    );
                   } else {
                     setSelectedMemberIds(
-                      selectedMemberIds.filter(
-                        (id) =>
-                          id !== member.id
-                      )
+                      (current) =>
+                        current.filter(
+                          (id) => id !== member.id
+                        )
                     );
                   }
                 }}
@@ -301,7 +310,7 @@ export default function ExpenseForm({
       </div>
 
       {/* Amount / Percentage values */}
-      {splitType !== "even" && (
+      {splitType !== "EQUAL" && (
         <div
           className="
             rounded-xl
@@ -312,7 +321,7 @@ export default function ExpenseForm({
           "
         >
           <p className="mb-3 font-semibold text-hk-text">
-            {splitType === "amount"
+            {splitType === "AMOUNT"
               ? "Amount per member"
               : "Percentage per member"}
           </p>
@@ -329,8 +338,11 @@ export default function ExpenseForm({
                   key={member.id}
                   className="
                     flex
-                    items-center
-                    gap-16
+                    flex-col
+                    gap-2
+                    sm:flex-row
+                    sm:items-center
+                    sm:gap-4
                   "
                 >
                   <span
@@ -346,28 +358,30 @@ export default function ExpenseForm({
                   <input
                     type="number"
                     min="0"
+                    step="0.01"
                     value={
-                      splitValues[member.id] ??
-                      ""
+                      splitValues[member.id] ?? ""
                     }
                     onChange={(e) => {
-                      setSplitValues({
-                        ...splitValues,
-                        [member.id]:
-                          Number(
-                            e.target.value
-                          ),
-                      });
+                      setSplitValues(
+                        (current) => ({
+                          ...current,
+                          [member.id]:
+                            Number(
+                              e.target.value
+                            ),
+                        })
+                      );
                     }}
-                    className={`${inputClass} w-64!`}
+                    className={`${inputClass} sm:w-64`}
                     placeholder={
-                      splitType === "amount"
+                      splitType === "AMOUNT"
                         ? "Amount"
                         : "%"
                     }
                   />
 
-                  {splitType === "percent" && (
+                  {splitType === "PERCENT" && (
                     <span className="text-hk-text-muted">
                       %
                     </span>

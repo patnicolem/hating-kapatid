@@ -1,6 +1,5 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
@@ -13,41 +12,43 @@ datasource db {
 }
 
 model User {
-  id           String  @id @default(cuid())
-  email        String  @unique
+  id           String   @id @default(cuid())
+  email        String   @unique
   username     String
   passwordHash String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   groupMemberships GroupMember[]
   sentInvitations  GroupInvitation[] @relation("InvitationSender")
   expensesPaid     Expense[]         @relation("ExpensePayer")
   expenseSplits    ExpenseSplit[]
 
+  settlementsSent     Settlement[] @relation("SettlementFrom")
+  settlementsReceived Settlement[] @relation("SettlementTo")
+
   @@map("users")
 }
 
 model Group {
-  id   String @id @default(cuid())
-  name String
-
+  id        String   @id @default(cuid())
+  name      String
+  currency  String   @default("PHP")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   members     GroupMember[]
   expenses    Expense[]
   invitations GroupInvitation[]
+  settlements Settlement[]
 
   @@map("groups")
 }
 
 model GroupMember {
-  id      String @id @default(cuid())
-  userId  String
-  groupId String
-
+  id       String    @id @default(cuid())
+  userId   String
+  groupId  String
   role     GroupRole @default(MEMBER)
   joinedAt DateTime  @default(now())
 
@@ -61,19 +62,16 @@ model GroupMember {
 }
 
 model GroupInvitation {
-  id        String @id @default(cuid())
+  id        String           @id @default(cuid())
   groupId   String
   email     String
   invitedBy String
-
   status    InvitationStatus @default(PENDING)
   expiresAt DateTime?
+  createdAt DateTime         @default(now())
 
-  createdAt DateTime @default(now())
-
-  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
-
-  inviter User @relation("InvitationSender", fields: [invitedBy], references: [id], onDelete: Cascade)
+  group   Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  inviter User  @relation("InvitationSender", fields: [invitedBy], references: [id], onDelete: Cascade)
 
   @@index([groupId])
   @@index([email])
@@ -81,21 +79,17 @@ model GroupInvitation {
 }
 
 model Expense {
-  id      String @id @default(cuid())
-  groupId String
-  paidBy  String
-
+  id          String    @id @default(cuid())
+  groupId     String
+  paidBy      String
   description String
   amount      Decimal   @db.Decimal(12, 2)
   splitType   SplitType
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
-
-  payer User @relation("ExpensePayer", fields: [paidBy], references: [id], onDelete: Restrict)
-
+  group  Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  payer  User           @relation("ExpensePayer", fields: [paidBy], references: [id], onDelete: Restrict)
   splits ExpenseSplit[]
 
   @@index([groupId])
@@ -104,19 +98,38 @@ model Expense {
 }
 
 model ExpenseSplit {
-  id        String @id @default(cuid())
+  id        String  @id @default(cuid())
   expenseId String
   userId    String
-
-  value Decimal @db.Decimal(12, 2)
+  value     Decimal @db.Decimal(12, 2)
 
   expense Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
-
-  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   @@unique([expenseId, userId])
   @@index([userId])
   @@map("expense_splits")
+}
+
+model Settlement {
+  id         String           @id @default(cuid())
+  groupId    String
+  fromUserId String
+  toUserId   String
+  amount     Decimal          @db.Decimal(12, 2)
+  status     SettlementStatus @default(PENDING)
+  settledAt  DateTime?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  group    Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  fromUser User  @relation("SettlementFrom", fields: [fromUserId], references: [id], onDelete: Restrict)
+  toUser   User  @relation("SettlementTo", fields: [toUserId], references: [id], onDelete: Restrict)
+
+  @@index([groupId])
+  @@index([fromUserId])
+  @@index([toUserId])
+  @@map("settlements")
 }
 
 enum GroupRole {
@@ -136,4 +149,10 @@ enum SplitType {
   EQUAL
   AMOUNT
   PERCENT
+}
+
+enum SettlementStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
 }

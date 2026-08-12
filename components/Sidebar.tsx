@@ -4,7 +4,7 @@ import { Group } from "@/types/group";
 
 interface SidebarProps {
   groups: Group[];
-  selectedGroup: Group;
+  selectedGroup: Group | null;
   setSelectedGroup: (group: Group) => void;
 }
 
@@ -30,7 +30,8 @@ export default function Sidebar({
       <div className="space-y-2">
         {groups.map((group) => {
           const isSelected =
-            group.id === selectedGroup.id;
+            group.id === selectedGroup?.id;
+            
 
           return (
             <button

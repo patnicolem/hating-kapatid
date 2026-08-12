@@ -1,29 +1,30 @@
 export type Member = {
-  id: number;
+  id: string;
   name: string;
   email: string;
 };
 
 export type ExpenseSplit = {
-  memberId: number;
+  memberId: string;
   value: number;
 };
 
 export type Expense = {
-  id: number;
+  id: string;
   description: string;
   amount: number;
-  paidBy: number;
-  splitType: "even" | "amount" | "percent";
+  paidBy: string;
+  splitType: "EQUAL" | "AMOUNT" | "PERCENT";
   splits: {
-    memberId: number;
+    memberId: string;
     value: number;
   }[];
 };
 
 export type Group = {
-  id: number;
+  id: string;
   name: string;
+  currency: string;
   members: Member[];
   expenses: Expense[];
 };
