@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import ToastProvider from "@/components/Toast";
 import { Roboto } from "next/font/google";
 
 const roboto = Roboto({
@@ -21,18 +20,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("hk-theme");if(t==="dark"){document.documentElement.classList.add("dark");}else if(t==="light"){document.documentElement.classList.remove("dark");}}catch(e){}})();`,
+          }}
+        />
+      </head>
+
       <body className="min-h-screen bg-hk-background text-hk-text">
-        <div className="flex min-h-screen flex-col">
+        {children}
 
-          <Header />
-
-          <main className="flex-1">
-            {children}
-          </main>
-
-          <Footer />
-
-        </div>
+        <ToastProvider />
       </body>
     </html>
   );

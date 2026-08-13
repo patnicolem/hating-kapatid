@@ -1,6 +1,7 @@
 "use client";
 
 import { Expense, Member } from "@/types/group";
+import { computeMemberNetBalance, formatAmount } from "@/lib/balances";
 
 type BalanceSummaryProps = {
   expenses: Expense[];
@@ -25,38 +26,10 @@ export default function BalanceSummary({
   currency,
 }: BalanceSummaryProps) {
   // Calculate each member's net balance
-  const balances: Balance[] = members.map((member) => {
-    let balance = 0;
-
-    expenses.forEach((expense) => {
-      // Money paid by this member
-      if (expense.paidBy === member.id) {
-        balance += expense.amount;
-      }
-
-      // Money owed by this member
-      const split = expense.splits.find(
-        (split) => split.memberId === member.id
-      );
-
-      if (split) {
-        let owedAmount = split.value;
-
-        // For percentage splits
-        if (expense.splitType === "PERCENT") {
-          owedAmount =
-            expense.amount * (split.value / 100);
-        }
-
-        balance -= owedAmount;
-      }
-    });
-
-    return {
-      memberId: member.id,
-      amount: balance,
-    };
-  });
+  const balances: Balance[] = members.map((member) => ({
+    memberId: member.id,
+    amount: computeMemberNetBalance(expenses, member.id),
+  }));
 
   /*
    * Convert net balances into actual
@@ -120,15 +93,6 @@ export default function BalanceSummary({
       debtorIndex++;
     }
   }
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount);
-  };
 
   return (
     <div>
@@ -195,7 +159,7 @@ export default function BalanceSummary({
               </p>
 
               <p className="font-bold text-hk-primary">
-                {formatCurrency(debt.amount)}
+                {formatAmount(debt.amount, currency)}
               </p>
             </div>
           ))}

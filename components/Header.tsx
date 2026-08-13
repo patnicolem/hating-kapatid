@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Menu,
@@ -12,18 +12,71 @@ import {
   Sun,
   Moon,
   HandCoins,
+  ChevronDown,
+  LogOut,
+  UserPlus,
 } from "lucide-react";
+
+type CurrentUser = {
+  id: string;
+  name: string;
+  email: string;
+};
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof document === "undefined") return false;
+
+    const stored = window.localStorage.getItem("hk-theme");
+
+    if (stored) {
+      return stored === "dark";
+    }
+
+    return document.documentElement.classList.contains("dark");
+  });
+  const [user, setUser] = useState<CurrentUser | null>(null);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+
+  useEffect(() => {
+    async function loadUser() {
+      try {
+        const response = await fetch("/api/auth/me");
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+
+        setUser(data);
+      } catch {
+        // Ignore — show signed-out header
+      }
+    }
+
+    loadUser();
+  }, []);
+
+  async function logout() {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {
+      // Proceed to login even if logout request fails
+    }
+
+    window.location.assign("/login");
+  }
 
   function toggleTheme() {
     const html = document.documentElement;
 
     html.classList.toggle("dark");
 
-    setIsDarkMode(html.classList.contains("dark"));
+    const isDark = html.classList.contains("dark");
+
+    window.localStorage.setItem("hk-theme", isDark ? "dark" : "light");
+
+    setIsDarkMode(isDark);
   }
 
   return (
@@ -128,6 +181,28 @@ export default function Header() {
 
 
           <Link
+            href="/friends"
+            className="
+              flex
+              items-center
+              gap-2
+              rounded-lg
+              px-3
+              py-2
+              text-sm
+              font-medium
+              text-hk-text-secondary
+              transition-colors
+              hover:bg-hk-surface-secondary
+              hover:text-hk-primary
+            "
+          >
+            <UserPlus size={18} />
+            Friends
+          </Link>
+
+
+          <Link
             href="/settings"
             className="
               flex
@@ -154,20 +229,123 @@ export default function Header() {
 
 
           {/* User */}
-          <div className="
-            flex
-            items-center
-            gap-2
-            rounded-lg
-            px-3
-            py-2
-            text-sm
-            font-medium
-            text-hk-text-secondary
-          ">
-            <UserCircle size={18} />
-            Guest
-          </div>
+          {user ? (
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsUserMenuOpen((open) => !open)}
+                className="
+                  flex
+                  items-center
+                  gap-2
+                  rounded-lg
+                  px-3
+                  py-2
+                  text-sm
+                  font-medium
+                  text-hk-text-secondary
+                  transition-colors
+                  hover:bg-hk-surface-secondary
+                  hover:text-hk-primary
+                "
+                aria-expanded={isUserMenuOpen}
+              >
+                <UserCircle size={18} />
+                {user.name}
+                <ChevronDown size={14} />
+              </button>
+
+              {isUserMenuOpen && (
+                <div
+                  className="
+                    absolute
+                    right-0
+                    top-full
+                    z-50
+                    mt-1
+                    w-56
+                    overflow-hidden
+                    rounded-xl
+                    border
+                    border-hk-border
+                    bg-hk-surface
+                    shadow-lg
+                  "
+                >
+                  <div className="border-b border-hk-border px-4 py-3">
+                    <p className="truncate text-sm font-semibold text-hk-text">
+                      {user.name}
+                    </p>
+                    <p className="truncate text-xs text-hk-text-light">
+                      {user.email}
+                    </p>
+                  </div>
+
+                  <Link
+                    href="/settings"
+                    onClick={() => setIsUserMenuOpen(false)}
+                    className="
+                      flex
+                      items-center
+                      gap-2
+                      px-4
+                      py-2.5
+                      text-sm
+                      text-hk-text-secondary
+                      transition-colors
+                      hover:bg-hk-surface-secondary
+                      hover:text-hk-text
+                    "
+                  >
+                    <Settings size={16} />
+                    Settings
+                  </Link>
+
+                  <button
+                    type="button"
+                    onClick={logout}
+                    className="
+                      flex
+                      w-full
+                      items-center
+                      gap-2
+                      px-4
+                      py-2.5
+                      text-sm
+                      text-hk-text-secondary
+                      transition-colors
+                      hover:bg-hk-surface-secondary
+                      hover:text-hk-danger
+                    "
+                  >
+                    <LogOut size={16} />
+                    Log Out
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className="
+                flex
+                items-center
+                gap-2
+                rounded-lg
+                px-3
+                py-2
+                text-sm
+                font-medium
+                text-hk-text-secondary
+                transition-colors
+                hover:bg-hk-surface-secondary
+                hover:text-hk-primary
+              "
+            >
+              <UserCircle size={18} />
+              Sign In
+            </Link>
+          )}
 
 
           {/* Theme Toggle */}
@@ -317,6 +495,27 @@ export default function Header() {
 
 
             <Link
+              href="/friends"
+              onClick={() => setIsMenuOpen(false)}
+              className="
+                flex
+                items-center
+                gap-3
+                rounded-lg
+                px-3
+                py-3
+                text-hk-text-secondary
+                transition-colors
+                hover:bg-hk-surface-secondary
+                hover:text-hk-primary
+              "
+            >
+              <UserPlus size={20} />
+              Friends
+            </Link>
+
+
+            <Link
               href="/settings"
               onClick={() => setIsMenuOpen(false)}
               className="
@@ -341,17 +540,60 @@ export default function Header() {
 
 
             {/* Mobile User */}
-            <div className="
-              flex
-              items-center
-              gap-3
-              px-3
-              py-3
-              text-hk-text-secondary
-            ">
-              <UserCircle size={20} />
-              Guest
-            </div>
+            {user ? (
+              <>
+                <div className="
+                  flex
+                  items-center
+                  gap-3
+                  px-3
+                  py-3
+                  text-hk-text-secondary
+                ">
+                  <UserCircle size={20} />
+                  {user.name}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="
+                    flex
+                    items-center
+                    gap-3
+                    px-3
+                    py-3
+                    text-left
+                    text-hk-text-secondary
+                    transition-colors
+                    hover:bg-hk-surface-secondary
+                    hover:text-hk-danger
+                  "
+                >
+                  <LogOut size={20} />
+                  Log Out
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/login"
+                onClick={() => setIsMenuOpen(false)}
+                className="
+                  flex
+                  items-center
+                  gap-3
+                  px-3
+                  py-3
+                  text-hk-text-secondary
+                  transition-colors
+                  hover:bg-hk-surface-secondary
+                  hover:text-hk-primary
+                "
+              >
+                <UserCircle size={20} />
+                Sign In
+              </Link>
+            )}
 
           </div>
 

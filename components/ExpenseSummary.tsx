@@ -147,7 +147,7 @@ export default function ExpenseSummary({
                 </p>
 
                 <p className="mt-0.5 font-medium text-hk-text">
-                  {formatCurrency(summary.totalOwed)}
+                  {formatCurrency(summary.totalPaid)}
                 </p>
               </div>
 
@@ -158,7 +158,7 @@ export default function ExpenseSummary({
                 </p>
 
                 <p className="mt-0.5 font-medium text-hk-text">
-                  ₱{summary.totalOwed.toFixed(2)}
+                  {formatCurrency(summary.totalOwed)}
                 </p>
               </div>
 

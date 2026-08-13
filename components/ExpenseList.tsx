@@ -1,18 +1,30 @@
 "use client";
 
+import { useState } from "react";
+import { Pencil, Trash2 } from "lucide-react";
 import { Expense, Member } from "@/types/group";
+import ExpenseForm from "@/components/ExpenseForm";
 
 type ExpenseListProps = {
   expenses: Expense[];
   members: Member[];
   currency: string;
+  onDeleteExpense: (expenseId: string) => void;
+  onUpdateExpense: (expense: Expense) => void;
 };
 
 export default function ExpenseList({
   expenses,
   members,
   currency,
+  onDeleteExpense,
+  onUpdateExpense,
 }: ExpenseListProps) {
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  const editingExpense =
+    expenses.find((expense) => expense.id === editingId) ?? null;
+
   if (expenses.length === 0) {
     return (
       <div
@@ -43,6 +55,35 @@ export default function ExpenseList({
         const payer = members.find(
           (member) => member.id === expense.paidBy
         );
+
+        const isEditing = expense.id === editingExpense?.id;
+
+        if (isEditing && editingExpense) {
+          return (
+            <div
+              key={expense.id}
+              className="
+                rounded-xl
+                border
+                border-hk-primary
+                bg-hk-surface
+                p-4
+              "
+            >
+              <ExpenseForm
+                members={members}
+                onAddExpense={() => {}}
+                currency={currency}
+                editingExpense={editingExpense}
+                onUpdateExpense={(updated) => {
+                  onUpdateExpense(updated);
+                  setEditingId(null);
+                }}
+                onCancelEdit={() => setEditingId(null)}
+              />
+            </div>
+          );
+        }
 
         return (
           <div
@@ -81,9 +122,62 @@ export default function ExpenseList({
                 </p>
               </div>
 
-              <p className="text-lg font-bold text-hk-primary">
-                {currency} {expense.amount.toFixed(2)}
-              </p>
+              <div className="flex items-center gap-3">
+                <p className="text-lg font-bold text-hk-primary">
+                  {currency} {expense.amount.toFixed(2)}
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => setEditingId(expense.id)}
+                  className="
+                    flex
+                    h-8
+                    w-8
+                    shrink-0
+                    items-center
+                    justify-center
+                    rounded-lg
+                    border
+                    border-hk-border
+                    bg-hk-background
+                    text-hk-text-secondary
+                    transition-colors
+                    hover:border-hk-primary
+                    hover:text-hk-primary
+                  "
+                  aria-label={`Edit expense ${expense.description}`}
+                  title="Edit expense"
+                >
+                  <Pencil size={15} />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => onDeleteExpense(expense.id)}
+                  className="
+                    flex
+                    h-8
+                    w-8
+                    shrink-0
+                    items-center
+                    justify-center
+                    rounded-lg
+                    border
+                    border-hk-border
+                    bg-hk-background
+                    text-hk-text-secondary
+                    transition-colors
+                    hover:border-hk-danger
+                    hover:bg-hk-danger/10
+                    hover:text-hk-danger
+                  "
+                  aria-label={`Remove expense ${expense.description}`}
+                  title="Remove expense"
+                >
+                  <Trash2 size={15} />
+                </button>
+              </div>
             </div>
 
             {/* Individual shares */}

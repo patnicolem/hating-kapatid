@@ -1,7 +1,10 @@
+export type MemberRole = "OWNER" | "ADMIN" | "MEMBER";
+
 export type Member = {
   id: string;
   name: string;
   email: string;
+  role: MemberRole;
 };
 
 export type ExpenseSplit = {

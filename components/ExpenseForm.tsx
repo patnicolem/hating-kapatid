@@ -3,48 +3,111 @@
 import { useState } from "react";
 import { CirclePlus } from "lucide-react";
 import { Member, Expense } from "@/types/group";
+import { toast } from "@/components/Toast";
 
 type ExpenseFormProps = {
   members: Member[];
   onAddExpense: (expense: Expense) => void;
   currency: string;
+  editingExpense?: Expense | null;
+  onUpdateExpense?: (expense: Expense) => void;
+  onCancelEdit?: () => void;
 };
 
 export default function ExpenseForm({
   members,
   onAddExpense,
+  currency,
+  editingExpense = null,
+  onUpdateExpense,
+  onCancelEdit,
 }: ExpenseFormProps) {
-  const [description, setDescription] = useState("");
-  const [amount, setAmount] = useState("");
-  const [paidBy, setPaidBy] = useState("");
+  const isEditing = editingExpense !== null;
+
+  const [description, setDescription] = useState(
+    editingExpense?.description ?? ""
+  );
+  const [amount, setAmount] = useState(
+    editingExpense ? String(editingExpense.amount) : ""
+  );
+  const [paidBy, setPaidBy] = useState(
+    editingExpense?.paidBy ?? ""
+  );
 
   const [splitType, setSplitType] =
-    useState<"EQUAL" | "AMOUNT" | "PERCENT">("EQUAL");
+    useState<"EQUAL" | "AMOUNT" | "PERCENT">(
+      editingExpense?.splitType ?? "EQUAL"
+    );
 
   const [selectedMemberIds, setSelectedMemberIds] =
-    useState<string[]>([]);
+    useState<string[]>(
+      editingExpense?.splits.map((split) => split.memberId) ?? []
+    );
 
   const [splitValues, setSplitValues] =
-    useState<Record<string, number>>({});
+    useState<Record<string, number>>(() => {
+      if (!editingExpense) return {};
+
+      return Object.fromEntries(
+        editingExpense.splits.map((split) => [
+          split.memberId,
+          split.value,
+        ])
+      );
+    });
+
+  function resetForm() {
+    if (editingExpense) {
+      setDescription(editingExpense.description);
+      setAmount(String(editingExpense.amount));
+      setPaidBy(editingExpense.paidBy);
+      setSplitType(editingExpense.splitType);
+      setSelectedMemberIds(
+        editingExpense.splits.map((split) => split.memberId)
+      );
+      setSplitValues(
+        Object.fromEntries(
+          editingExpense.splits.map((split) => [
+            split.memberId,
+            split.value,
+          ])
+        )
+      );
+    } else {
+      setDescription("");
+      setAmount("");
+      setPaidBy("");
+      setSplitType("EQUAL");
+      setSelectedMemberIds([]);
+      setSplitValues({});
+    }
+  }
 
   function handleSubmit() {
-    if (
-      description.trim() === "" ||
-      amount === "" ||
-      paidBy === ""
-    ) {
+    if (description.trim() === "") {
+      toast("Description is required.");
+      return;
+    }
+
+    if (amount === "") {
+      toast("Amount is required.");
+      return;
+    }
+
+    if (paidBy === "") {
+      toast("Please select who paid.");
       return;
     }
 
     if (selectedMemberIds.length === 0) {
-      alert("Please select at least one member.");
+      toast("Please select at least one member.");
       return;
     }
 
     const expenseAmount = Number(amount);
 
     if (expenseAmount <= 0) {
-      alert("Expense amount must be greater than zero.");
+      toast("Expense amount must be greater than zero.");
       return;
     }
 
@@ -82,7 +145,7 @@ export default function ExpenseForm({
       if (
         Math.abs(totalSplitAmount - expenseAmount) > 0.01
       ) {
-        alert(
+        toast(
           `Split amounts must equal ${formatCurrency(expenseAmount)}`
         );
         return;
@@ -109,7 +172,7 @@ export default function ExpenseForm({
       if (
         Math.abs(totalPercentage - 100) > 0.01
       ) {
-        alert("Percentages must add up to 100%.");
+        toast("Percentages must add up to 100%.");
         return;
       }
 
@@ -120,7 +183,7 @@ export default function ExpenseForm({
     }
 
     const newExpense: Expense = {
-      id: crypto.randomUUID(),
+      id: editingExpense?.id ?? crypto.randomUUID(),
       description: description.trim(),
       amount: expenseAmount,
       paidBy,
@@ -128,15 +191,13 @@ export default function ExpenseForm({
       splits,
     };
 
-    onAddExpense(newExpense);
+    if (isEditing && onUpdateExpense) {
+      onUpdateExpense(newExpense);
+    } else {
+      onAddExpense(newExpense);
+    }
 
-    // Reset form
-    setDescription("");
-    setAmount("");
-    setPaidBy("");
-    setSplitType("EQUAL");
-    setSelectedMemberIds([]);
-    setSplitValues({});
+    resetForm();
   }
 
   const inputClass = `
@@ -393,7 +454,7 @@ export default function ExpenseForm({
       )}
 
       {/* Add Expense */}
-      <div className="flex justify-center pt-1">
+      <div className="flex justify-center gap-3 pt-1">
         <button
           type="button"
           onClick={handleSubmit}
@@ -418,8 +479,29 @@ export default function ExpenseForm({
           "
         >
           <CirclePlus size={18} />
-          Add Expense
+          {isEditing ? "Save Changes" : "Add Expense"}
         </button>
+
+        {isEditing && onCancelEdit && (
+          <button
+            type="button"
+            onClick={onCancelEdit}
+            className="
+              rounded-lg
+              border
+              border-hk-border
+              bg-hk-surface
+              px-6
+              py-2.5
+              font-medium
+              text-hk-text-secondary
+              transition-colors
+              hover:text-hk-text
+            "
+          >
+            Cancel
+          </button>
+        )}
       </div>
     </div>
   );
