@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { toMember } from "@/lib/mappers";
 import { getSessionUserId } from "@/lib/session";
 import { getMembership, isAdmin } from "@/lib/access";
 
@@ -31,106 +30,6 @@ async function requireGroupAdmin(groupId: string) {
   }
 
   return null;
-}
-
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ groupId: string; memberId: string }> }
-) {
-  try {
-    const { groupId, memberId } = await params;
-
-    const denied = await requireGroupAdmin(groupId);
-
-    if (denied) return denied;
-
-    const membership = await prisma.groupMember.findUnique({
-      where: { userId_groupId: { userId: memberId, groupId } },
-    });
-
-    if (!membership) {
-      return NextResponse.json(
-        { error: "Member not found" },
-        { status: 404 }
-      );
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { id: memberId },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "Member not found" },
-        { status: 404 }
-      );
-    }
-
-    const body = await request.json();
-
-    const name = body.name?.trim();
-    const email = body.email?.trim().toLowerCase();
-
-    const data: { username?: string; email?: string } = {};
-
-    if (name !== undefined) {
-      if (!name) {
-        return NextResponse.json(
-          { error: "Name is required" },
-          { status: 400 }
-        );
-      }
-
-      data.username = name;
-    }
-
-    if (email !== undefined) {
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        return NextResponse.json(
-          { error: "Invalid email address" },
-          { status: 400 }
-        );
-      }
-
-      if (email !== user.email) {
-        const existing = await prisma.user.findUnique({
-          where: { email },
-        });
-
-        if (existing) {
-          return NextResponse.json(
-            { error: "Email is already in use" },
-            { status: 409 }
-          );
-        }
-      }
-
-      data.email = email;
-    }
-
-    if (Object.keys(data).length === 0) {
-      return NextResponse.json(
-        { error: "Nothing to update" },
-        { status: 400 }
-      );
-    }
-
-    const updated = await prisma.user.update({
-      where: { id: memberId },
-      data,
-    });
-
-    return NextResponse.json(
-      toMember({ user: updated, role: membership.role })
-    );
-  } catch (error) {
-    console.error("Failed to update member:", error);
-
-    return NextResponse.json(
-      { error: "Failed to update member" },
-      { status: 500 }
-    );
-  }
 }
 
 export async function DELETE(

@@ -67,7 +67,8 @@ model GroupMember {
 model GroupInvitation {
   id        String           @id @default(cuid())
   groupId   String
-  email     String
+  email     String?
+  token     String?          @unique
   invitedBy String
   status    InvitationStatus @default(PENDING)
   expiresAt DateTime?

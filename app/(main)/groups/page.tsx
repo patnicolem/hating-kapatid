@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, UsersRound, Pencil, Trash2 } from "lucide-react";
+import { X, UsersRound, Pencil, Trash2, Link2 } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import ExpenseForm from "@/components/ExpenseForm";
 import MemberList from "@/components/MemberList";
@@ -9,7 +9,7 @@ import ExpenseList from "@/components/ExpenseList";
 import ExpenseSummary from "@/components/ExpenseSummary";
 import { toast } from "@/components/Toast";
 import InviteMemberForm from "@/components/InviteMemberForm";
-import { Group, Expense, Member } from "@/types/group";
+import { Group, Expense } from "@/types/group";
 import type { FriendUser } from "@/types/friend";
 
 export default function GroupsPage() {
@@ -202,6 +202,38 @@ export default function GroupsPage() {
     } catch (error) {
       console.error("Error inviting member:", error);
       toast(error instanceof Error ? error.message : "Failed to invite member");
+    }
+  }
+
+  async function copyInviteLink() {
+    if (!selectedGroup) return;
+
+    try {
+      const response = await fetch(
+        `/api/groups/${selectedGroup.id}/invite-link`,
+        { method: "POST" }
+      );
+
+      if (response.status === 401) {
+        window.location.assign("/login");
+        return;
+      }
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error ?? "Failed to create invite link");
+      }
+
+      const data = await response.json();
+
+      await navigator.clipboard.writeText(data.url);
+
+      toast("Invite link copied to clipboard.", "success");
+    } catch (error) {
+      console.error("Error creating invite link:", error);
+      toast(
+        error instanceof Error ? error.message : "Failed to create invite link"
+      );
     }
   }
 
@@ -428,51 +460,6 @@ export default function GroupsPage() {
     } catch (error) {
       console.error("Error deleting group:", error);
       toast(error instanceof Error ? error.message : "Failed to delete group");
-    }
-  }
-
-  async function updateMember(updatedMember: Member) {
-    if (!selectedGroup) return;
-
-    try {
-      const response = await fetch(
-        `/api/groups/${selectedGroup.id}/members/${updatedMember.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: updatedMember.name,
-            email: updatedMember.email,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => null);
-        throw new Error(data?.error ?? "Failed to update member");
-      }
-
-      const savedMember: Member = await response.json();
-
-      const updatedGroup: Group = {
-        ...selectedGroup,
-        members: selectedGroup.members.map((member) =>
-          member.id === savedMember.id ? savedMember : member
-        ),
-      };
-
-      setGroups((currentGroups) =>
-        currentGroups.map((group) =>
-          group.id === selectedGroup.id ? updatedGroup : group
-        )
-      );
-
-      setSelectedGroup(updatedGroup);
-    } catch (error) {
-      console.error("Error updating member:", error);
-      toast(error instanceof Error ? error.message : "Failed to update member");
     }
   }
 
@@ -1006,6 +993,32 @@ export default function GroupsPage() {
                     {isAdmin && (
                       <button
                         type="button"
+                        onClick={copyInviteLink}
+                        className="
+                          flex
+                          h-9
+                          w-9
+                          items-center
+                          justify-center
+                          rounded-lg
+                          border
+                          border-hk-border
+                          bg-hk-surface
+                          text-hk-text-secondary
+                          transition-colors
+                          hover:border-hk-primary
+                          hover:text-hk-primary
+                        "
+                        aria-label="Copy invite link"
+                        title="Copy invite link"
+                      >
+                        <Link2 size={16} />
+                      </button>
+                    )}
+
+                    {isAdmin && (
+                      <button
+                        type="button"
                         onClick={startEditingGroup}
                         className="
                           flex
@@ -1083,7 +1096,6 @@ export default function GroupsPage() {
                 <MemberList
                   members={selectedGroup.members}
                   onDeleteMember={deleteMember}
-                  onUpdateMember={updateMember}
                   currentUserId={currentUser?.id ?? null}
                   canManageMembers={canManageMembers}
                 />

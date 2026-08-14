@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useTheme } from "@/lib/useTheme";
 import {
   Menu,
   X,
@@ -25,17 +26,7 @@ type CurrentUser = {
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    if (typeof document === "undefined") return false;
-
-    const stored = window.localStorage.getItem("hk-theme");
-
-    if (stored) {
-      return stored === "dark";
-    }
-
-    return document.documentElement.classList.contains("dark");
-  });
+  const { isDark: isDarkMode, toggle: toggleTheme } = useTheme();
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
@@ -65,18 +56,6 @@ export default function Header() {
     }
 
     window.location.assign("/login");
-  }
-
-  function toggleTheme() {
-    const html = document.documentElement;
-
-    html.classList.toggle("dark");
-
-    const isDark = html.classList.contains("dark");
-
-    window.localStorage.setItem("hk-theme", isDark ? "dark" : "light");
-
-    setIsDarkMode(isDark);
   }
 
   return (

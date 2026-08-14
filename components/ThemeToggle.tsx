@@ -1,41 +1,15 @@
 "use client";
 
-import { useState } from "react";
 import { Sun, Moon } from "lucide-react";
+import { useTheme } from "@/lib/useTheme";
 
 export default function ThemeToggle() {
-  const [darkMode, setDarkMode] = useState(() => {
-    if (typeof document === "undefined") return false;
-
-    const stored = window.localStorage.getItem("hk-theme");
-
-    if (stored) {
-      return stored === "dark";
-    }
-
-    return document.documentElement.classList.contains("dark");
-  });
-
-  function toggleTheme() {
-    const html = document.documentElement;
-
-    const isDark = !html.classList.contains("dark");
-
-    if (isDark) {
-      html.classList.add("dark");
-    } else {
-      html.classList.remove("dark");
-    }
-
-    window.localStorage.setItem("hk-theme", isDark ? "dark" : "light");
-
-    setDarkMode(isDark);
-  }
+  const { isDark, toggle } = useTheme();
 
   return (
     <button
       type="button"
-      onClick={toggleTheme}
+      onClick={toggle}
       className="
         flex
         h-10
@@ -49,9 +23,9 @@ export default function ThemeToggle() {
         hover:text-hk-primary
       "
       aria-label="Toggle dark mode"
-      title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+      title={isDark ? "Switch to light mode" : "Switch to dark mode"}
     >
-      {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+      {isDark ? <Sun size={20} /> : <Moon size={20} />}
     </button>
   );
 }

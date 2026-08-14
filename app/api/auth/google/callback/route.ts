@@ -66,7 +66,11 @@ export async function GET(request: Request) {
 
     await createSession(user.id);
 
-    return NextResponse.redirect(new URL("/", request.url));
+    const next = cookieStore.get("oauth_next")?.value ?? "/";
+
+    cookieStore.delete("oauth_next");
+
+    return NextResponse.redirect(new URL(next, request.url));
   } catch (error) {
     console.error("Google sign-in failed:", error);
 

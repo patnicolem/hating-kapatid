@@ -32,6 +32,16 @@ export default function LoginPage() {
     }
   }, []);
 
+  function getNextPath(): string {
+    const next = new URLSearchParams(window.location.search).get("next");
+
+    if (next && next.startsWith("/") && !next.startsWith("//")) {
+      return next;
+    }
+
+    return "/";
+  }
+
   async function handleSubmit() {
     if (isSubmitting) return;
 
@@ -83,7 +93,7 @@ export default function LoginPage() {
         throw new Error(data?.error ?? "Something went wrong");
       }
 
-      window.location.assign("/");
+      window.location.assign(getNextPath());
     } catch (error) {
       toast(
         error instanceof Error ? error.message : "Something went wrong"
@@ -93,7 +103,9 @@ export default function LoginPage() {
   }
 
   function handleGoogleSignIn() {
-    window.location.assign("/api/auth/google");
+    window.location.assign(
+      `/api/auth/google?next=${encodeURIComponent(getNextPath())}`
+    );
   }
 
   const inputClass = `
