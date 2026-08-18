@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useTheme } from "@/lib/useTheme";
 import {
@@ -24,29 +24,14 @@ type CurrentUser = {
   email: string;
 };
 
-export default function Header() {
+type HeaderProps = {
+  user: CurrentUser | null;
+};
+
+export default function Header({ user }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isDark: isDarkMode, toggle: toggleTheme } = useTheme();
-  const [user, setUser] = useState<CurrentUser | null>(null);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-
-  useEffect(() => {
-    async function loadUser() {
-      try {
-        const response = await fetch("/api/auth/me");
-
-        if (!response.ok) return;
-
-        const data = await response.json();
-
-        setUser(data);
-      } catch {
-        // Ignore — show signed-out header
-      }
-    }
-
-    loadUser();
-  }, []);
 
   async function logout() {
     try {

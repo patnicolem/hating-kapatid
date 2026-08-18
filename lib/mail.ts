@@ -55,6 +55,73 @@ export async function sendInviteEmail({
   });
 }
 
+export type SettlementReminderEmailInput = {
+  to: string;
+  toName: string;
+  remitterName: string;
+  groupName: string;
+  currency: string;
+  amount: number;
+  fromName: string;
+  payeeName: string;
+};
+
+export async function sendSettlementReminderEmail({
+  to,
+  toName,
+  remitterName,
+  groupName,
+  currency,
+  amount,
+  fromName,
+  payeeName,
+}: SettlementReminderEmailInput): Promise<void> {
+  if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
+    console.warn(
+      "SMTP not configured; skipping settlement reminder email for " + to
+    );
+    return;
+  }
+
+  const formattedAmount = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+
+  const groupsUrl = `${APP_URL}/groups`;
+
+  try {
+    await transport.sendMail({
+      from: `"Hating Kapatid" <${SMTP_USER}>`,
+      to,
+      subject: `Reminder: pending settlement in ${groupName} on Hating Kapatid`,
+      text: [
+        `Hi ${toName},`,
+        "",
+        `${remitterName} is reminding you about a pending settlement in the group "${groupName}".`,
+        "",
+        `${fromName} owes ${payeeName} ${formattedAmount}.`,
+        "",
+        "Sign in to Hating Kapatid to confirm or cancel this settlement:",
+        groupsUrl,
+      ].join("\n"),
+      html: `
+      <p>Hi ${escapeHtml(toName)},</p>
+      <p>${escapeHtml(remitterName)} is reminding you about a pending settlement in the group
+        <strong>${escapeHtml(groupName)}</strong>.</p>
+      <p><strong>${escapeHtml(fromName)}</strong> owes <strong>${escapeHtml(payeeName)}</strong>
+        <strong>${escapeHtml(formattedAmount)}</strong>.</p>
+      <p>Sign in to Hating Kapatid to confirm or cancel this settlement:
+        <a href="${groupsUrl}">${groupsUrl}</a></p>
+    `,
+    });
+  } catch (error) {
+    console.error("Failed to send settlement reminder email:", error);
+  }
+}
+
 function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")

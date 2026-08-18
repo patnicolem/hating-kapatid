@@ -4,7 +4,8 @@ import type {
   GroupGetPayload,
   GroupInclude,
 } from "@/lib/generated/prisma/models/Group";
-import type { Expense, Group, Member } from "@/types/group";
+import type { Expense, Group, Member, Settlement } from "@/types/group";
+import { computeSuggestedSettlements } from "@/lib/expenses/settlement";
 
 export const groupInclude = {
   members: {
@@ -13,6 +14,13 @@ export const groupInclude = {
   },
   expenses: {
     include: { splits: true },
+    orderBy: { createdAt: "desc" },
+  },
+  settlements: {
+    include: {
+      fromUser: { select: { id: true, username: true } },
+      toUser: { select: { id: true, username: true } },
+    },
     orderBy: { createdAt: "desc" },
   },
 } satisfies GroupInclude;
@@ -35,6 +43,18 @@ type ExpenseRow = {
   amount: AmountValue;
   splitType: Expense["splitType"];
   splits: SplitRow[];
+};
+
+type SettlementRow = {
+  id: string;
+  fromUserId: string;
+  toUserId: string;
+  amount: AmountValue;
+  status: Settlement["status"];
+  settledAt: Date | null;
+  createdAt: Date;
+  fromUser: { id: string; username: string };
+  toUser: { id: string; username: string };
 };
 
 export function toMember(groupMember: MemberRow): Member {
@@ -60,12 +80,40 @@ export function toExpense(expense: ExpenseRow): Expense {
   };
 }
 
+export function toSettlement(settlement: SettlementRow): Settlement {
+  return {
+    id: settlement.id,
+    fromUserId: settlement.fromUserId,
+    toUserId: settlement.toUserId,
+    fromName: settlement.fromUser.username,
+    toName: settlement.toUser.username,
+    amount: Number(settlement.amount),
+    status: settlement.status,
+    settledAt: settlement.settledAt?.toISOString() ?? null,
+    createdAt: settlement.createdAt.toISOString(),
+  };
+}
+
 export function toGroup(group: GroupWithData): Group {
+  const members = group.members.map(toMember);
+  const expenses = group.expenses.map(toExpense);
+
   return {
     id: group.id,
     name: group.name,
     currency: group.currency,
-    members: group.members.map(toMember),
-    expenses: group.expenses.map(toExpense),
+    members,
+    expenses,
+    settlements: group.settlements.map(toSettlement),
+    suggestedSettlements: computeSuggestedSettlements(
+      expenses,
+      members,
+      group.settlements.map((settlement) => ({
+        fromUserId: settlement.fromUserId,
+        toUserId: settlement.toUserId,
+        amount: Number(settlement.amount),
+        status: settlement.status,
+      }))
+    ),
   };
 }

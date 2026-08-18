@@ -1,22 +1,31 @@
 "use client";
 
-import { Expense, Member } from "@/types/group";
+import { Expense, Member, Settlement } from "@/types/group";
+import { computeMemberNetBalances } from "@/lib/expenses/settlement";
 import BalanceSummary from "@/components/BalanceSummary";
 
 type ExpenseSummaryProps = {
   members: Member[];
   expenses: Expense[];
+  settlements: Settlement[];
   currency: string;
 };
 
 export default function ExpenseSummary({
   members,
   expenses,
+  settlements,
   currency,
 }: ExpenseSummaryProps) {
   const totalExpenses = expenses.reduce(
     (total, expense) => total + expense.amount,
     0
+  );
+
+  const netBalances = computeMemberNetBalances(
+    expenses,
+    members,
+    settlements
   );
 
   const memberSummaries = members.map((member) => {
@@ -51,12 +60,35 @@ export default function ExpenseSummary({
       0
     );
 
-    const netBalance = totalPaid - totalOwed;
+    // Settlements where this member paid another member
+    const settledOut = settlements
+      .filter(
+        (settlement) =>
+          settlement.fromUserId === member.id &&
+          (settlement.status === "PENDING" ||
+            settlement.status === "COMPLETED")
+      )
+      .reduce((total, settlement) => total + settlement.amount, 0);
+
+    // Settlements where this member received payment
+    const settledIn = settlements
+      .filter(
+        (settlement) =>
+          settlement.toUserId === member.id &&
+          (settlement.status === "PENDING" ||
+            settlement.status === "COMPLETED")
+      )
+      .reduce((total, settlement) => total + settlement.amount, 0);
+
+    // Remaining balance after settled and pending payments
+    const netBalance = netBalances[member.id] ?? 0;
 
     return {
       member,
       totalPaid,
       totalOwed,
+      settledOut,
+      settledIn,
       netBalance,
     };
   });
@@ -79,7 +111,8 @@ export default function ExpenseSummary({
         </h3>
 
         <p className="mt-1 text-sm text-hk-text-light">
-          See how much everyone has paid and owes.
+          Paid and Share come from expenses; Settled Out/In show payments
+          made or received to settle. Balance = Paid - Share + Settled Out - Settled In.
         </p>
       </div>
 
@@ -123,7 +156,7 @@ export default function ExpenseSummary({
                 gap-3
                 px-5
                 py-4
-                sm:grid-cols-4
+                sm:grid-cols-6
                 sm:items-center
                 sm:gap-4
                 ${
@@ -162,6 +195,32 @@ export default function ExpenseSummary({
                 </p>
               </div>
 
+              {/* Settled Out */}
+              <div>
+                <p className="text-xs text-hk-text-light">
+                  Settled Out
+                </p>
+
+                <p className="mt-0.5 font-medium text-hk-text">
+                  {summary.settledOut > 0
+                    ? formatCurrency(summary.settledOut)
+                    : "—"}
+                </p>
+              </div>
+
+              {/* Settled In */}
+              <div>
+                <p className="text-xs text-hk-text-light">
+                  Settled In
+                </p>
+
+                <p className="mt-0.5 font-medium text-hk-text">
+                  {summary.settledIn > 0
+                    ? formatCurrency(summary.settledIn)
+                    : "—"}
+                </p>
+              </div>
+
               {/* Net Balance */}
               <div className="sm:text-right">
                 <p className="text-xs text-hk-text-light">
@@ -193,6 +252,7 @@ export default function ExpenseSummary({
         <BalanceSummary
           expenses={expenses}
           members={members}
+          settlements={settlements}
           currency={currency}
         />
       </div>

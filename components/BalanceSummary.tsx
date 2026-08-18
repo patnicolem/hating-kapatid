@@ -1,11 +1,13 @@
 "use client";
 
-import { Expense, Member } from "@/types/group";
-import { computeMemberNetBalance, formatAmount } from "@/lib/balances";
+import { Expense, Member, Settlement } from "@/types/group";
+import { computeMemberNetBalances } from "@/lib/expenses/settlement";
+import { formatAmount } from "@/lib/balances";
 
 type BalanceSummaryProps = {
   expenses: Expense[];
   members: Member[];
+  settlements: Settlement[];
   currency: string;
 };
 
@@ -23,13 +25,17 @@ type Debt = {
 export default function BalanceSummary({
   expenses,
   members,
+  settlements,
   currency,
 }: BalanceSummaryProps) {
-  // Calculate each member's net balance
-  const balances: Balance[] = members.map((member) => ({
-    memberId: member.id,
-    amount: computeMemberNetBalance(expenses, member.id),
-  }));
+  // Calculate each member's net balance (settlements included)
+  const balances: Balance[] = Object.entries(
+    computeMemberNetBalances(expenses, members, settlements)
+  )
+    .map(([memberId, amount]) => ({ memberId, amount }))
+    .filter((balance) =>
+      members.some((member) => member.id === balance.memberId)
+    );
 
   /*
    * Convert net balances into actual
@@ -96,9 +102,13 @@ export default function BalanceSummary({
 
   return (
     <div>
-      <h3 className="mb-3 text-xl font-bold text-hk-primary">
+      <h3 className="mb-1 text-xl font-bold text-hk-primary">
         Who Owes Who
       </h3>
+
+      <p className="mb-3 text-sm text-hk-text-light">
+        Remaining balances after settled and pending payments.
+      </p>
 
       {debts.length === 0 ? (
         <div
